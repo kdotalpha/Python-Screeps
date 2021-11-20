@@ -1,4 +1,5 @@
 from defs import *
+import globals
 
 __pragma__('noalias', 'name')
 __pragma__('noalias', 'undefined')
@@ -10,21 +11,28 @@ __pragma__('noalias', 'type')
 __pragma__('noalias', 'update')
 
 
-def run_harvester(creep):
+def run_harvester(creep, num_creeps):
     """
     Runs a creep as a generic harvester.
     :param creep: The creep to run
     """
-
+    #increase max_creeps as we build new types of creeps
+    max_creeps = globals.MAX_HARVESTERS
     # If we're full, stop filling up and remove the saved source
-    if creep.memory.filling and _.sum(creep.carry) >= creep.carryCapacity:
+    if creep.memory.filling and creep.store.getFreeCapacity() == 0:
+        if globals.DEBUG_HARVESTERS:
+            print(creep.name + " has no more capacity and is done filling.")
         creep.memory.filling = False
         del creep.memory.source
+
     # If we're empty, start filling again and remove the saved target
-    elif not creep.memory.filling and creep.carry.energy <= 0:
+    elif not creep.memory.filling and creep.store.getUsedCapacity() == 0:
+        if globals.DEBUG_HARVESTERS:
+            print(creep.name + " is empty and will start filling.")
         creep.memory.filling = True
         del creep.memory.target
-
+        
+    # calling into creep.memory.X is a boolean, unless you use Game.getObjectById to get the value
     if creep.memory.filling:
         # If we have a saved source, use it
         if creep.memory.source:
@@ -46,22 +54,32 @@ def run_harvester(creep):
         if creep.memory.target:
             target = Game.getObjectById(creep.memory.target)
         else:
-            # Get a random new target.
-            target = _(creep.room.find(FIND_STRUCTURES)) \
+            #if there is less than the max number of creeps, put the energy in a spawn/extension that isn't at max energy. Otherwise, pick a random target
+            if num_creeps < max_creeps:
+                target = _(creep.room.find(FIND_STRUCTURES)) \
                 .filter(lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION)
-                                   and s.energy < s.energyCapacity) or s.structureType == STRUCTURE_CONTROLLER) \
+                                   and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) \
                 .sample()
+            else: 
+                # Get a random new target.
+                target = _(creep.room.find(FIND_STRUCTURES)) \
+                    .filter(lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION)
+                                    and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) or s.structureType == STRUCTURE_CONTROLLER) \
+                    .sample()
             creep.memory.target = target.id
+            if globals.DEBUG_HARVESTERS:
+                print(creep.name + " has a new target: " + target.structureType)
 
         # If we are targeting a spawn or extension, we need to be directly next to it - otherwise, we can be 3 away.
-        if target.energyCapacity:
+        # Controllers do not have an energy store, so it returns undefined and thus fails out
+        if target.store:
             is_close = creep.pos.isNearTo(target)
         else:
             is_close = creep.pos.inRangeTo(target, 3)
 
         if is_close:
             # If we are targeting a spawn or extension, transfer energy. Otherwise, use upgradeController on it.
-            if target.energyCapacity:
+            if target.store:
                 result = creep.transfer(target, RESOURCE_ENERGY)
                 if result == OK or result == ERR_FULL:
                     del creep.memory.target
