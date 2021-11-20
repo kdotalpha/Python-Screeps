@@ -17,7 +17,10 @@ def run_harvester(creep, num_creeps):
     :param creep: The creep to run
     """
     #increase max_creeps as we build new types of creeps
-    max_creeps = globals.MAX_HARVESTERS
+    #TODO: this currently has a bug where if I'm in multiple rooms, I'm only looking at the max values instead of the values per room when
+    #deciding whether or not to build more creeps
+    max_creeps = globals.MAX_HARVESTERS + globals.MAX_BUILDERS
+    
     # If we're full, stop filling up and remove the saved source
     if creep.memory.filling and creep.store.getFreeCapacity() == 0:
         if globals.DEBUG_HARVESTERS:
@@ -29,6 +32,7 @@ def run_harvester(creep, num_creeps):
     elif not creep.memory.filling and creep.store.getUsedCapacity() == 0:
         if globals.DEBUG_HARVESTERS:
             print(creep.name + " is empty and will start filling.")
+        creep.say("🔄 harvest")
         creep.memory.filling = True
         del creep.memory.target
         
@@ -48,7 +52,7 @@ def run_harvester(creep, num_creeps):
             if result != OK:
                 print("[{}] Unknown result from creep.harvest({}): {}".format(creep.name, source, result))
         else:
-            creep.moveTo(source)
+            creep.moveTo(source, {"visualizePathStyle": { "stroke": "#ffffff" } })
     else:
         # If we have a saved target, use it
         if creep.memory.target:
@@ -67,6 +71,7 @@ def run_harvester(creep, num_creeps):
                                     and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) or s.structureType == STRUCTURE_CONTROLLER) \
                     .sample()
             creep.memory.target = target.id
+            creep.say("🔄" + target.structureType)
             if globals.DEBUG_HARVESTERS:
                 print(creep.name + " has a new target: " + target.structureType)
 
@@ -93,6 +98,6 @@ def run_harvester(creep, num_creeps):
                         creep.name, target, result))
                 # Let the creeps get a little bit closer than required to the controller, to make room for other creeps.
                 if not creep.pos.inRangeTo(target, 2):
-                    creep.moveTo(target)
+                    creep.moveTo(target, {"visualizePathStyle": { "stroke": "#ffffff" } })
         else:
-            creep.moveTo(target)
+            creep.moveTo(target, {"visualizePathStyle": { "stroke": "#ffffff" } })

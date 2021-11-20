@@ -28,22 +28,40 @@ def main():
     for name in Object.keys(Game.spawns):
         spawn = Game.spawns[name]
         if not spawn.spawning:
-            # Get the number of our creeps in the room.
+            # Get the number of our creeps in this room.
             num_creeps = 0
+            num_harvesters = 0
+            num_builders = 0
             for name in Object.keys(Game.creeps):
                 creep = Game.creeps[name]
                 if creep.pos.roomName == spawn.pos.roomName:
-                    num_creeps += 1
-            
+                    if creep.memory.role == "harvester":
+                        num_harvesters += 1
+                    elif creep.memory.role == "builder":
+                        num_builders += 1
+
+            num_creeps = num_harvesters + num_builders
+            #if globals.DEBUG_CREEP_CREATION:
+            #    print("There are currently " + num_harvesters + " harvesters and " + num_builders + " builders")
+
             #If we have less than the total max of harvesters, create some harvesters
-            if num_creeps < globals.MAX_HARVESTERS and spawn.store.getUsedCapacity(RESOURCE_ENERGY) >= 250:
-                result = spawn.createCreep([WORK, CARRY, MOVE, MOVE])
-                if globals.DEBUG_CREEP_CREATION:
-                    print("Creating a new creep named " + result)
-                # the result is the name of the creep, find it and assign it the harvester role
-                new_creep = globals.GetCreepByName(result)
-                if new_creep != None:
-                    new_creep.memory.role = "harvester"
+            if num_harvesters < globals.MAX_HARVESTERS and spawn.store.getUsedCapacity(RESOURCE_ENERGY) >= 250:            
+                creep_name = Game.time
+                result = spawn.spawnCreep([WORK, CARRY, MOVE, MOVE], creep_name, { "memory": { "role": "harvester"} })
+                if result != OK:
+                    print("Ran into error creating creep: " + result)
+                elif globals.DEBUG_CREEP_CREATION:
+                    print("Creating a new harvester named " + creep_name)
+            
+            #Same thing, if we have less than the total number of builders make some builders
+            if num_builders < globals.MAX_BUILDERS and spawn.store.getUsedCapacity(RESOURCE_ENERGY) >= 250:
+                creep_name = Game.time
+                result = spawn.spawnCreep([WORK, CARRY, MOVE, MOVE], creep_name, { "memory": { "role": "builder"} })
+                if result != OK:
+                    print("Ran into error creating creep: " + result)
+                elif globals.DEBUG_CREEP_CREATION:
+                    print("Creating a new builder named " + creep_name)
+
     
     # Harvesting
     for name in Object.keys(Game.creeps):

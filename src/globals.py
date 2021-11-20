@@ -1,3 +1,4 @@
+import random
 # defs is a package which claims to export all constants and some JavaScript objects, but in reality does
 #  nothing. This is useful mainly when using an editor like PyCharm, so that it 'knows' that things like Object, Creep,
 #  Game, etc. do exist.
@@ -15,7 +16,8 @@ __pragma__('noalias', 'type')
 __pragma__('noalias', 'update')
 
 
-MAX_HARVESTERS = 10
+MAX_HARVESTERS = 6
+MAX_BUILDERS = 1
 DEBUG_HARVESTERS = False
 DEBUG_CREEP_CREATION = True
 
