@@ -5,6 +5,7 @@
 from defs import *
 import harvester
 import globals
+import builder
 
 # These are currently required for Transcrypt in order to use the following names in JavaScript.
 # Without the 'noalias' pragma, each of the following would be translated into something like 'py_Infinity' or
@@ -24,9 +25,32 @@ def main():
     Main game logic loop.
     """
    
+   #Clean the memory of dead creeps
+    for mem_name in Object.keys(Memory.creeps):
+       if not Game.creeps[mem_name]:
+           del Memory.creeps[mem_name]
+
     # Run each spawn
     for name in Object.keys(Game.spawns):
         spawn = Game.spawns[name]
+
+        #create radial construction sites
+        """        
+        Game.creeps["33493059"].room.getTerrain().get(Game.spawns["Spawn1"].pos.x, Game.spawns["Spawn1"].pos.y)
+        0
+        Game.creeps["33493059"].room.getTerrain().get(Game.spawns["Spawn1"].pos.x, Game.spawns["Spawn1"].pos.y-2)
+        1
+        """
+        #TODO: Make the radial depth based on the room controller level
+        radial_depth = 3
+        x_shift = -5
+        for i in range(radial_depth):
+            for j in range(radial_depth):
+                spawn.room.createConstructionSite(spawn.pos.x + i + x_shift, spawn.pos.y + j, STRUCTURE_EXTENSION)
+                spawn.room.createConstructionSite(spawn.pos.x - i + x_shift, spawn.pos.y - j, STRUCTURE_EXTENSION)
+                spawn.room.createConstructionSite(spawn.pos.x + i + x_shift, spawn.pos.y - j, STRUCTURE_EXTENSION)
+                spawn.room.createConstructionSite(spawn.pos.x - i + x_shift, spawn.pos.y + j, STRUCTURE_EXTENSION)
+
         if not spawn.spawning:
             # Get the number of our creeps in this room.
             num_creeps = 0
@@ -68,6 +92,8 @@ def main():
         creep = Game.creeps[name]
         if creep.memory.role == "harvester":
             harvester.run_harvester(creep, num_creeps)
+        elif creep.memory.role == "builder":
+            builder.run_builder(creep)
 
 """     
     # Run each creep

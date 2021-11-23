@@ -16,10 +16,11 @@ __pragma__('noalias', 'type')
 __pragma__('noalias', 'update')
 
 
-MAX_HARVESTERS = 6
-MAX_BUILDERS = 1
+MAX_HARVESTERS = 2
+MAX_BUILDERS = 4
 DEBUG_HARVESTERS = False
 DEBUG_CREEP_CREATION = True
+DEBUG_BUILDERS = True
 
 def GetCreepByName(name):
     for creep_name in Object.keys(Game.creeps):

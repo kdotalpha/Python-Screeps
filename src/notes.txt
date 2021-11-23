@@ -2,17 +2,40 @@ module.exports.loop = function () {
 
     for(var name in Game.creeps) {
         var creep = Game.creeps[name];
-        roleHarvester.run(creep);
+        console.log("Creep Name: ", name, " - Store: ", creep.store.getFreeCapacity())
     }
 }
 
-  for(var creep_name in Game.creeps) {
-        if (creep_name == "Cooper")
+Game.creeps["33493059"].room.getTerrain().get(Game.spawns["Spawn1"].pos.x, Game.spawns["Spawn1"].pos.y)
+0
+Game.creeps["33493059"].room.getTerrain().get(Game.spawns["Spawn1"].pos.x, Game.spawns["Spawn1"].pos.y-2)
+1
+
+module.exports.loop = function () {
+
+  for (var creep_name in Game.creeps) 
+  {
+        if (creep_name == "Builder1")
         { 
-            Game.creeps[creep_name].memory.role = "test";
+            var creep = Game.creeps[creep_name];
+            console.log(creep_name)
         }
+  }
+}
+
+
+            var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
+            if (targets.length)
+            {
+                for (var site in targets)
+                {
+                    console.log(site.store);
+                }
+            }
+        }
+  }
         
-    }
+        
 
 def GetCreepByName(name):
     for creep_name in Object.keys(Game.creeps):
