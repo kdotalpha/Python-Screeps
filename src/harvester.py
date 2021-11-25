@@ -23,18 +23,18 @@ def run_harvester(creep, num_creeps):
     
     # If we're full, stop filling up and remove the saved source
     if creep.memory.filling and creep.store.getFreeCapacity() == 0:
-        if globals.DEBUG_HARVESTERS:
-            print(creep.name + " has no more capacity and is done filling.")
         creep.memory.filling = False
         del creep.memory.source
+        if globals.DEBUG_HARVESTERS:
+            print(creep.name + " has no more capacity and is done filling.")
 
     # If we're empty, start filling again and remove the saved target
     elif not creep.memory.filling and creep.store.getUsedCapacity() == 0:
-        if globals.DEBUG_HARVESTERS:
-            print(creep.name + " is empty and will start filling.")
         creep.say("🔄 harvest")
         creep.memory.filling = True
         del creep.memory.target
+        if globals.DEBUG_HARVESTERS:
+            print(creep.name + " is empty and will start filling.")
         
     # calling into creep.memory.X is a boolean, unless you use Game.getObjectById to get the value
     if creep.memory.filling:
@@ -65,16 +65,16 @@ def run_harvester(creep, num_creeps):
         else:
             #if there is less than the max number of creeps, put the energy in a spawn/extension that isn't at max energy. Otherwise, pick a random target
             if num_creeps < max_creeps:
-                target = _(creep.room.find(FIND_STRUCTURES)) \
-                .filter(lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION)
-                                   and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) \
-                .sample()
+                target = globals.getEnergyStorageStructure(creep)
             else: 
                 # Get a random new target.
+                target = globals.getEnergyStorageStructure(creep, False, True)
+                """
                 target = _(creep.room.find(FIND_STRUCTURES)) \
                     .filter(lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION)
                                     and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) or s.structureType == STRUCTURE_CONTROLLER) \
                     .sample()
+                """
             creep.memory.target = target.id
             creep.say("🚧 " + target.structureType)
             if globals.DEBUG_HARVESTERS:

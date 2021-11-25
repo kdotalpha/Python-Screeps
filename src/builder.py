@@ -63,12 +63,21 @@ def run_builder(creep):
                 print(creep.name + " build target is: " + target.structureType)
                 debug_msg = True
             
+            #If there is nothing to build, prioritize filling towers energy
+            if not target:
+                target = _(creep.room.find(FIND_STRUCTURES)) \
+                    .filter(lambda s: ((s.structureType == STRUCTURE_TOWER) and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) \
+                    .first()
+            if globals.DEBUG_BUILDERS and target and not debug_msg:
+                debug_msg = True
+                print(creep.name + " has nothing to build, so energy target is: " + target.structureType)
+            
             #If there is nothing to build, prioritize filling spawns and extensions with energy
             if not target:
                 target = _(creep.room.find(FIND_STRUCTURES)) \
                     .filter(lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION)
                                         and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) \
-                    .sample()
+                    .first()
             if globals.DEBUG_BUILDERS and target and not debug_msg:
                 debug_msg = True
                 print(creep.name + " has nothing to build, so energy target is: " + target.structureType)
