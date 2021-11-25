@@ -53,6 +53,11 @@ def run_harvester(creep, num_creeps):
                 print("[{}] Unknown result from creep.harvest({}): {}".format(creep.name, source, result))
         else:
             creep.moveTo(source, {"visualizePathStyle": { "stroke": "#ffffff" } })
+            if globals.HARVESTER_ROADS:
+                try:
+                    creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD)
+                except:
+                    pass
     else:
         # If we have a saved target, use it
         if creep.memory.target:
@@ -99,5 +104,15 @@ def run_harvester(creep, num_creeps):
                 # Let the creeps get a little bit closer than required to the controller, to make room for other creeps.
                 if not creep.pos.inRangeTo(target, 2):
                     creep.moveTo(target, {"visualizePathStyle": { "stroke": "#ffffff" } })
+                    if globals.HARVESTER_ROADS:
+                        try:
+                            creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD)
+                        except:
+                            pass
         else:
             creep.moveTo(target, {"visualizePathStyle": { "stroke": "#ffffff" } })
+            if globals.HARVESTER_ROADS:
+                try:
+                    creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD)
+                except:
+                    pass

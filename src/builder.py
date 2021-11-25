@@ -58,7 +58,7 @@ def run_builder(creep):
                 del creep.memory.target
         else:
             debug_msg = False
-            target = _(creep.room.find(FIND_CONSTRUCTION_SITES)).sample()
+            target = _(creep.room.find(FIND_CONSTRUCTION_SITES)).first()
             if globals.DEBUG_BUILDERS and target and not debug_msg:                
                 print(creep.name + " build target is: " + target.structureType)
                 debug_msg = True
@@ -86,14 +86,14 @@ def run_builder(creep):
 
         # If we are targeting a spawn or extension, we need to be directly next to it - otherwise, we can be 3 away.
         # Controllers do not have an energy store, so it returns undefined and thus fails out
-        if target.store:
+        if target != None and target.store:
             is_close = creep.pos.isNearTo(target)
         else:
             is_close = creep.pos.inRangeTo(target, 3)
 
         if is_close:
             # If we are targeting a spawn or extension, transfer energy. Otherwise, use upgradeController on it.
-            if target.store:
+            if target != None and target.store:
                 result = creep.transfer(target, RESOURCE_ENERGY)
                 if result == OK or result == ERR_FULL:
                     del creep.memory.target
