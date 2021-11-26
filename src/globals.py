@@ -60,7 +60,7 @@ def getSource(creep):
             print("Both sources taken, picking random source")
         return sources[_.random(0, sources.length - 1)]
 
-def getBrokenRoad(creep, closest = True, hitsMin = 100):
+def getBrokenRoad(creep, closest = True, hitsMin = 300):
     """
     Gets a road in the same room as a creep with hits less than hitsMin
     :param creep: The creep to run
@@ -72,9 +72,7 @@ def getBrokenRoad(creep, closest = True, hitsMin = 100):
                     .filter(lambda s: (s.structureType == STRUCTURE_ROAD and s.hits < hitsMin)) \
                     .first()
     else:
-        return _(creep.pos.findClosestByPath(FIND_STRUCTURES)) \
-                    .filter(lambda s: (s.structureType == STRUCTURE_ROAD and s.hits < hitsMin)) \
-                    .first()
+        return creep.pos.findClosestByPath(FIND_STRUCTURES, { "filter": lambda s: ((s.structureType == STRUCTURE_ROAD and s.hits < hitsMin)) })        
     
 
 def getTowers(creep, closest = True):
@@ -84,13 +82,11 @@ def getTowers(creep, closest = True):
     :param closest: Whether to find the closest tower
     """
     if not closest:
-        return _(creep.room.find(FIND_STRUCTURES)) \
+        return _(creep.room.find(FIND_MY_STRUCTURES)) \
                     .filter(lambda s: ((s.structureType == STRUCTURE_TOWER) and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) \
                     .first()
     else:
-        return _(creep.pos.findClosestByPath(FIND_STRUCTURES)) \
-                    .filter(lambda s: ((s.structureType == STRUCTURE_TOWER) and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) \
-                    .first()
+        return creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { "filter": lambda s: ((s.structureType == STRUCTURE_TOWER and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) })
 
 
 def getEnergyStorageStructure(creep, closest = True, controller = False):
@@ -101,21 +97,31 @@ def getEnergyStorageStructure(creep, closest = True, controller = False):
     :param controller: Whether to include the room controller in the available energy storage structures
     """
     if controller:
+        #ignore closest
+        #determine randomly whether the energy goes to a spawn/extension or controller
+        #then pick the closest of the winners
+        selector = _.random(0, 9)
+        if selector != 0:
+            #go to the closest spawn/extension
+            target = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { "filter": \
+                lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION) 
+                        and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) })
+        if selector == 0 or target == undefined:
+            #go to the controller
+            target = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { "filter": \
+                lambda s: ((s.structureType == STRUCTURE_CONTROLLER)) })
+        return target        
+
+            
         if not closest:
             return _(creep.room.find(FIND_MY_STRUCTURES)) \
                     .filter(lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION)
                                     and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) or s.structureType == STRUCTURE_CONTROLLER) \
                     .sample()
         else:
-            structures = creep.room.find(FIND_MY_STRUCTURES)            
-            range = 99999999
-            for s in structures:
-                target_range = creep.pos.getRangeTo(s)
-                if (((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION) 
-                        and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) or s.structureType == STRUCTURE_CONTROLLER) and target_range < range:
-                    target = s
-                    range = target_range
-            return target
+            return creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { "filter": \
+                lambda s: (((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION) 
+                        and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) or s.structureType == STRUCTURE_CONTROLLER) })
     else:
         if not closest:
             return _(creep.room.find(FIND_MY_STRUCTURES)) \
@@ -123,12 +129,7 @@ def getEnergyStorageStructure(creep, closest = True, controller = False):
                                         and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) \
                 .sample()
         else:
-            structures = creep.room.find(FIND_MY_STRUCTURES)            
-            range = 99999999
-            for s in structures:
-                target_range = creep.pos.getRangeTo(s)
-                if ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION) 
-                        and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) and target_range < range:
-                    target = s
-                    range = target_range
-            return target
+            return creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { "filter": \
+                lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION) 
+                        and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) })
+

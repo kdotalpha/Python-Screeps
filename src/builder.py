@@ -58,7 +58,7 @@ def run_builder(creep):
                 del creep.memory.target
         else:
             #get the closest construction site, command action here is BUILD
-            target = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES)
+            target = _(creep.room.find(FIND_CONSTRUCTION_SITES)).first()
             if globals.DEBUG_BUILDERS and target:                
                 print(creep.name + " build target: " + target.structureType)
             
@@ -75,8 +75,10 @@ def run_builder(creep):
                     print(creep.name + " refilling energy: " + target.structureType)
             
             #If there is nothing to fill, fix broken roads, command action is REPAIR
-            if not target:                
+            if not target:
                 target = globals.getBrokenRoad(creep)
+                if globals.DEBUG_BUILDERS:
+                    print("road target: " + target)
                 if globals.DEBUG_BUILDERS and target:
                     print(creep.name + " fixing road: " + target.structureType)
 
@@ -90,7 +92,8 @@ def run_builder(creep):
         
         #try to perform the appropriate action and get closer, if the error is that you're not in range, just get closer
         #Check if this a target we need to BUILD
-        if target.progress != undefined:
+        
+        if target and target.progress != undefined:
             result = creep.build(target)
             if result == ERR_INVALID_TARGET:
                 #done building
