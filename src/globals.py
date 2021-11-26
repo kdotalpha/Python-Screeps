@@ -21,7 +21,8 @@ MAX_BUILDERS = 2
 DEBUG_HARVESTERS = False
 DEBUG_CREEP_CREATION = True
 DEBUG_BUILDERS = False
-HARVESTER_ROADS = False
+HARVESTER_ROADS = True
+DEBUG_SOURCE_SELECTION = True
 
 def GetCreepByName(name):
     for creep_name in Object.keys(Game.creeps):
@@ -34,22 +35,31 @@ def getSource(creep):
     sources = creep.room.find(FIND_SOURCES)
     unusedSources = []
     for source in sources:
-        if source.pos.findInRange(FIND_MY_CREEPS, 1) == 0:
+        if source.pos.findInRange(FIND_MY_CREEPS, 1).length == 0 and source.energy > 0:
             unusedSources.append(source)
+            if DEBUG_SOURCE_SELECTION:
+                print("Unused sources: " + unusedSources + " with count " + unusedSources.length)
     range = 99999999
     sourceList = []
     
-    if unusedSources.count > 0:
-        sourceList = unusedSources
-    else:
-        sourceList = sources
-
-    for s in sourceList:
-        source_range = creep.pos.getRangeTo(s)
-        if source_range < range:
-            target = s
-            range = source_range
+    if unusedSources.length > 0:
+        #If there are sources with no one around, go to those
+        for s in unusedSources:
+            source_range = creep.pos.getRangeTo(s)
+            if DEBUG_SOURCE_SELECTION:
+                print("Range to " + s + " is " + source_range)
+            if source_range < range:
+                target = s
+                range = source_range
+        if DEBUG_SOURCE_SELECTION:
+            print("Selected closest target is " + target)
         return target
+    else:
+        #otherwise go to a random source
+        if DEBUG_SOURCE_SELECTION:
+            print("Both sources taken, picking random source")
+        return sources[_.random(0, sources.length - 1)]
+
 
 def getEnergyStorageStructure(creep, closest = True, controller = False):
     """
