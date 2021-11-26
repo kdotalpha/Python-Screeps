@@ -39,9 +39,8 @@ def run_builder(creep):
         if creep.memory.source:
             source = Game.getObjectById(creep.memory.source)
         else:
-            # Get a random new source and save it
+            # Get a new source and save it
             source = globals.getSource(creep)
-            #source = _.sample(creep.room.find(FIND_SOURCES))
             creep.memory.source = source.id
 
         # If we're near the source, harvest it - otherwise, move to it.
@@ -58,48 +57,77 @@ def run_builder(creep):
             if not target:
                 del creep.memory.target
         else:
-            debug_msg = False
-            target = _(creep.room.find(FIND_CONSTRUCTION_SITES)).first()
-            if globals.DEBUG_BUILDERS and target and not debug_msg:                
-                print(creep.name + " build target is: " + target.structureType)
-                debug_msg = True
+            #get the closest construction site, command action here is BUILD
+            target = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES)
+            if globals.DEBUG_BUILDERS and target:                
+                print(creep.name + " build target: " + target.structureType)
             
-            #If there is nothing to build, prioritize filling towers energy
+            #If there is nothing to build, prioritize filling towers energy, command action is TRANSFER
             if not target:
-                target = _(creep.room.find(FIND_STRUCTURES)) \
-                    .filter(lambda s: ((s.structureType == STRUCTURE_TOWER) and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) \
-                    .first()
-            if globals.DEBUG_BUILDERS and target and not debug_msg:
-                debug_msg = True
-                print(creep.name + " has nothing to build, so energy target is: " + target.structureType)
+                target = globals.getTowers(creep)
+                if globals.DEBUG_BUILDERS and target:
+                    print(creep.name + " filling tower: " + target.structureType)  
             
-            #If there is nothing to build, prioritize filling spawns and extensions with energy
+            #If there is nothing to build, prioritize filling spawns and extensions with energy, command action is TRANSFER
             if not target:
-                target = _(creep.room.find(FIND_STRUCTURES)) \
-                    .filter(lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION)
-                                        and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) \
-                    .first()
-            if globals.DEBUG_BUILDERS and target and not debug_msg:
-                debug_msg = True
-                print(creep.name + " has nothing to build, so energy target is: " + target.structureType)
+                target = globals.getEnergyStorageStructure(creep)
+                if globals.DEBUG_BUILDERS and target:
+                    print(creep.name + " refilling energy: " + target.structureType)
             
-            if not target:
-                #If there is nothing to fill, get out of the way
-                target = _(creep.room.find(FIND_STRUCTURES)) \
-                    .filter(lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION))) \
-                    .sample()
-            if globals.DEBUG_BUILDERS and target and not debug_msg:
-                debug_msg = True
-                print(creep.name + " has nothing to build and nothing needs energy, so get out of the way: " + target.structureType)
+            #If there is nothing to fill, fix broken roads, command action is REPAIR
+            if not target:                
+                target = globals.getBrokenRoad(creep)
+                if globals.DEBUG_BUILDERS and target:
+                    print(creep.name + " fixing road: " + target.structureType)
+
+            #If there's truly nothing else to do, become a harvester, command action is upgradeController or TRANSFER
+            if not target:                
+                target = globals.getEnergyStorageStructure(creep, False, True)
+                if globals.DEBUG_BUILDERS and target:
+                    print(creep.name + " transfering energy: " + target.structureType)
 
             creep.memory.target = target.id
+        
+        #try to perform the appropriate action and get closer, if the error is that you're not in range, just get closer
+        #Check if this a target we need to BUILD
+        if target.progress != undefined:
+            result = creep.build(target)
+            if result == ERR_INVALID_TARGET:
+                #done building
+                del creep.memory.target
+            elif result != OK and result != ERR_NOT_IN_RANGE:
+                print("[{}] Unknown result from creep.build({}): {}".format(creep.name, target, result))
 
-        # If we are targeting a spawn or extension, we need to be directly next to it - otherwise, we can be 3 away.
-        # Controllers do not have an energy store, so it returns undefined and thus fails out
-        if target != None and target.store:
-            is_close = creep.pos.isNearTo(target)
-        else:
-            is_close = creep.pos.inRangeTo(target, 3)
+        elif target.structureType == STRUCTURE_TOWER or target.structureType == STRUCTURE_SPAWN or target.structureType == STRUCTURE_EXTENSION:
+            result = creep.transfer(target, RESOURCE_ENERGY)
+            if result == OK or result == ERR_FULL:
+                #done transfering
+                del creep.memory.target
+            elif result != ERR_NOT_IN_RANGE:
+                print("[{}] Unknown result from creep.transfer({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
+        
+        #TODO: Update this to repair all of my structures
+        elif target.structureType == STRUCTURE_ROAD:
+            result = creep.repair(target)
+            if result == ERR_INVALID_TARGET:
+                #done repairing
+                del creep.memory.target
+            elif result != ERR_NOT_IN_RANGE:
+                print("[{}] Unknown result from creep.repair({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
+
+        elif target.structureType == STRUCTURE_CONTROLLER:
+            result = creep.upgradeController(target)
+            if result == ERR_INVALID_TARGET:
+                #done upgrading
+                del creep.memory.target
+            elif result != ERR_NOT_IN_RANGE:
+                print("[{}] Unknown result from creep.upgradeController({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
+
+        #keep getting closer
+        creep.moveTo(target, {"visualizePathStyle": { "stroke": "#ffffff" } })
+
+"""
+        is_close = True      
 
         if is_close:
             # If we are targeting a spawn or extension, transfer energy. Otherwise, use upgradeController on it.
@@ -124,3 +152,4 @@ def run_builder(creep):
                     creep.moveTo(target, {"visualizePathStyle": { "stroke": "#ffffff" } })
         else:
             creep.moveTo(target, {"visualizePathStyle": { "stroke": "#ffffff" } })
+"""

@@ -52,19 +52,19 @@ def main():
 
             #TODO: Replace with more creative spawning logic
             #If we have less than the total max of harvesters, create some harvesters
-            if num_harvesters < globals.MAX_HARVESTERS and spawn.room.energyAvailable >= 1100:
+            if num_harvesters < globals.MAX_HARVESTERS and spawn.room.energyAvailable >= 1300:
                 #create a super harvester
                 creep_name = Game.time
-                result = spawn.spawnCreep([MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY], creep_name, { "memory": { "role": "harvester"} })
+                result = spawn.spawnCreep([MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, CARRY], creep_name, { "memory": { "role": "harvester"} })
                 if result != OK:
                     print("Ran into error creating super creep: " + result)
                 elif globals.DEBUG_CREEP_CREATION:
                     print("Creating a new super harvester named " + creep_name)
             #Same thing, if we have less than the total number of builders make some builders
-            elif num_builders < globals.MAX_BUILDERS and spawn.room.energyAvailable >= 1100:
+            elif num_builders < globals.MAX_BUILDERS and spawn.room.energyAvailable >= 1300:
                 #create a super builder
                 creep_name = Game.time
-                result = spawn.spawnCreep([MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY], creep_name, { "memory": { "role": "builder"} })
+                result = spawn.spawnCreep([MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, CARRY], creep_name, { "memory": { "role": "builder"} })
                 if result != OK:
                     print("Ran into error creating super creep: " + result)
                 elif globals.DEBUG_CREEP_CREATION:

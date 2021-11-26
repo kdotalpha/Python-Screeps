@@ -20,9 +20,9 @@ MAX_HARVESTERS = 3
 MAX_BUILDERS = 2
 DEBUG_HARVESTERS = False
 DEBUG_CREEP_CREATION = True
-DEBUG_BUILDERS = False
-HARVESTER_ROADS = True
-DEBUG_SOURCE_SELECTION = True
+DEBUG_BUILDERS = True
+HARVESTER_ROADS = False
+DEBUG_SOURCE_SELECTION = False
 
 def GetCreepByName(name):
     for creep_name in Object.keys(Game.creeps):
@@ -59,6 +59,38 @@ def getSource(creep):
         if DEBUG_SOURCE_SELECTION:
             print("Both sources taken, picking random source")
         return sources[_.random(0, sources.length - 1)]
+
+def getBrokenRoad(creep, closest = True, hitsMin = 100):
+    """
+    Gets a road in the same room as a creep with hits less than hitsMin
+    :param creep: The creep to run
+    :param closest: Whether to find the closest road
+    :param hitsMin: The minimum number of hits we can allow before needing to repair
+    """
+    if not closest:
+        return _(creep.room.find(FIND_STRUCTURES)) \
+                    .filter(lambda s: (s.structureType == STRUCTURE_ROAD and s.hits < hitsMin)) \
+                    .first()
+    else:
+        return _(creep.pos.findClosestByPath(FIND_STRUCTURES)) \
+                    .filter(lambda s: (s.structureType == STRUCTURE_ROAD and s.hits < hitsMin)) \
+                    .first()
+    
+
+def getTowers(creep, closest = True):
+    """
+    Gets a tower in the same room as a creep
+    :param creep: The creep to run
+    :param closest: Whether to find the closest tower
+    """
+    if not closest:
+        return _(creep.room.find(FIND_STRUCTURES)) \
+                    .filter(lambda s: ((s.structureType == STRUCTURE_TOWER) and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) \
+                    .first()
+    else:
+        return _(creep.pos.findClosestByPath(FIND_STRUCTURES)) \
+                    .filter(lambda s: ((s.structureType == STRUCTURE_TOWER) and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) \
+                    .first()
 
 
 def getEnergyStorageStructure(creep, closest = True, controller = False):
