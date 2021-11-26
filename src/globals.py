@@ -29,6 +29,28 @@ def GetCreepByName(name):
             return Game.creeps[name]
     return None
 
+def getSource(creep):
+    #source = _.sample(creep.room.find(FIND_SOURCES))
+    sources = creep.room.find(FIND_SOURCES)
+    unusedSources = []
+    for source in sources:
+        if source.pos.findInRange(FIND_MY_CREEPS, 1) == 0:
+            unusedSources.append(source)
+    range = 99999999
+    sourceList = []
+    
+    if unusedSources.count > 0:
+        sourceList = unusedSources
+    else:
+        sourceList = sources
+
+    for s in sourceList:
+        source_range = creep.pos.getRangeTo(s)
+        if source_range < range:
+            target = s
+            range = source_range
+        return target
+
 def getEnergyStorageStructure(creep, closest = True, controller = False):
     """
     Gets an energy storage structure in the same room as a creep
@@ -43,9 +65,15 @@ def getEnergyStorageStructure(creep, closest = True, controller = False):
                                     and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) or s.structureType == STRUCTURE_CONTROLLER) \
                     .sample()
         else:
-            return _(creep.pos.findClosestByRange(FIND_MY_STRUCTURES)) \
-                    .filter(lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION)
-                                    and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) or s.structureType == STRUCTURE_CONTROLLER)
+            structures = creep.room.find(FIND_MY_STRUCTURES)            
+            range = 99999999
+            for s in structures:
+                target_range = creep.pos.getRangeTo(s)
+                if (((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION) 
+                        and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) or s.structureType == STRUCTURE_CONTROLLER) and target_range < range:
+                    target = s
+                    range = target_range
+            return target
     else:
         if not closest:
             return _(creep.room.find(FIND_MY_STRUCTURES)) \
@@ -53,6 +81,12 @@ def getEnergyStorageStructure(creep, closest = True, controller = False):
                                         and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) \
                 .sample()
         else:
-            return _(creep.pos.findClosestByRange(FIND_MY_STRUCTURES)) \
-                .filter(lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION)
-                                        and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0))
+            structures = creep.room.find(FIND_MY_STRUCTURES)            
+            range = 99999999
+            for s in structures:
+                target_range = creep.pos.getRangeTo(s)
+                if ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION) 
+                        and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) and target_range < range:
+                    target = s
+                    range = target_range
+            return target

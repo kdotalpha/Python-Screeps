@@ -40,7 +40,8 @@ def run_builder(creep):
             source = Game.getObjectById(creep.memory.source)
         else:
             # Get a random new source and save it
-            source = _.sample(creep.room.find(FIND_SOURCES))
+            source = globals.getSource(creep)
+            #source = _.sample(creep.room.find(FIND_SOURCES))
             creep.memory.source = source.id
 
         # If we're near the source, harvest it - otherwise, move to it.

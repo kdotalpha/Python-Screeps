@@ -43,7 +43,8 @@ def run_harvester(creep, num_creeps):
             source = Game.getObjectById(creep.memory.source)
         else:
             # Get a random new source and save it
-            source = _.sample(creep.room.find(FIND_SOURCES))
+            source = globals.getSource(creep)
+            #source = _.sample(creep.room.find(FIND_SOURCES))
             creep.memory.source = source.id
 
         # If we're near the source, harvest it - otherwise, move to it.
@@ -69,12 +70,7 @@ def run_harvester(creep, num_creeps):
             else: 
                 # Get a random new target.
                 target = globals.getEnergyStorageStructure(creep, False, True)
-                """
-                target = _(creep.room.find(FIND_STRUCTURES)) \
-                    .filter(lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION)
-                                    and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) or s.structureType == STRUCTURE_CONTROLLER) \
-                    .sample()
-                """
+
             creep.memory.target = target.id
             creep.say("🚧 " + target.structureType)
             if globals.DEBUG_HARVESTERS:
