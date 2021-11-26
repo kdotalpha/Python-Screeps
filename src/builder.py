@@ -92,42 +92,42 @@ def run_builder(creep):
         
         #try to perform the appropriate action and get closer, if the error is that you're not in range, just get closer
         #Check if this a target we need to BUILD
-        
-        if target and target.progress != undefined:
-            result = creep.build(target)
-            if result == ERR_INVALID_TARGET:
-                #done building
-                del creep.memory.target
-            elif result != OK and result != ERR_NOT_IN_RANGE:
-                print("[{}] Unknown result from creep.build({}): {}".format(creep.name, target, result))
+        if target: 
+            if target.progress != undefined:
+                result = creep.build(target)
+                if result == ERR_INVALID_TARGET:
+                    #done building
+                    del creep.memory.target
+                elif result != OK and result != ERR_NOT_IN_RANGE:
+                    print("[{}] Unknown result from creep.build({}): {}".format(creep.name, target, result))
 
-        elif target.structureType == STRUCTURE_TOWER or target.structureType == STRUCTURE_SPAWN or target.structureType == STRUCTURE_EXTENSION:
-            result = creep.transfer(target, RESOURCE_ENERGY)
-            if result == OK or result == ERR_FULL:
-                #done transfering
-                del creep.memory.target
-            elif result != ERR_NOT_IN_RANGE:
-                print("[{}] Unknown result from creep.transfer({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
-        
-        #TODO: Update this to repair all of my structures
-        elif target.structureType == STRUCTURE_ROAD:
-            result = creep.repair(target)
-            if result == ERR_INVALID_TARGET:
-                #done repairing
-                del creep.memory.target
-            elif result != ERR_NOT_IN_RANGE:
-                print("[{}] Unknown result from creep.repair({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
+            elif target.structureType == STRUCTURE_TOWER or target.structureType == STRUCTURE_SPAWN or target.structureType == STRUCTURE_EXTENSION:
+                result = creep.transfer(target, RESOURCE_ENERGY)
+                if result == OK or result == ERR_FULL:
+                    #done transfering
+                    del creep.memory.target
+                elif result != ERR_NOT_IN_RANGE:
+                    print("[{}] Unknown result from creep.transfer({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
+            
+            #TODO: Update this to repair all of my structures
+            elif target.structureType == STRUCTURE_ROAD:
+                result = creep.repair(target)
+                if result == ERR_INVALID_TARGET:
+                    #done repairing
+                    del creep.memory.target
+                elif result != ERR_NOT_IN_RANGE:
+                    print("[{}] Unknown result from creep.repair({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
 
-        elif target.structureType == STRUCTURE_CONTROLLER:
-            result = creep.upgradeController(target)
-            if result == ERR_INVALID_TARGET:
-                #done upgrading
-                del creep.memory.target
-            elif result != ERR_NOT_IN_RANGE:
-                print("[{}] Unknown result from creep.upgradeController({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
+            elif target.structureType == STRUCTURE_CONTROLLER:
+                result = creep.upgradeController(target)
+                if result == ERR_INVALID_TARGET:
+                    #done upgrading
+                    del creep.memory.target
+                elif result != ERR_NOT_IN_RANGE:
+                    print("[{}] Unknown result from creep.upgradeController({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
 
-        #keep getting closer
-        creep.moveTo(target, {"visualizePathStyle": { "stroke": "#ffffff" } })
+            #keep getting closer
+            creep.moveTo(target, {"visualizePathStyle": { "stroke": "#ffffff" } })
 
 """
         is_close = True      

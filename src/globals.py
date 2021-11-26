@@ -21,8 +21,9 @@ MAX_BUILDERS = 2
 DEBUG_HARVESTERS = False
 DEBUG_CREEP_CREATION = True
 DEBUG_BUILDERS = True
-HARVESTER_ROADS = False
+HARVESTER_ROADS = True
 DEBUG_SOURCE_SELECTION = False
+DEBUG_TOWERS = True
 
 def GetCreepByName(name):
     for creep_name in Object.keys(Game.creeps):
@@ -32,6 +33,7 @@ def GetCreepByName(name):
 
 def getSource(creep):
     #source = _.sample(creep.room.find(FIND_SOURCES))
+    #TODO: Add dropped resources
     sources = creep.room.find(FIND_SOURCES)
     unusedSources = []
     for source in sources:
@@ -60,7 +62,7 @@ def getSource(creep):
             print("Both sources taken, picking random source")
         return sources[_.random(0, sources.length - 1)]
 
-def getBrokenRoad(creep, closest = True, hitsMin = 300):
+def getBrokenRoad(creep, closest = True, hitsMin = 500):
     """
     Gets a road in the same room as a creep with hits less than hitsMin
     :param creep: The creep to run

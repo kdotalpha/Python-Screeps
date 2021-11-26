@@ -6,6 +6,7 @@ from defs import *
 import harvester
 import globals
 import builder
+import tower
 
 # These are currently required for Transcrypt in order to use the following names in JavaScript.
 # Without the 'noalias' pragma, each of the following would be translated into something like 'py_Infinity' or
@@ -70,7 +71,7 @@ def main():
                 elif globals.DEBUG_CREEP_CREATION:
                     print("Creating a new super builder named " + creep_name)
         
-    # Harvesting
+    # Run creeps
     for name in Object.keys(Game.creeps):
         creep = Game.creeps[name]
         if creep.memory.role == "harvester":
@@ -78,5 +79,10 @@ def main():
         elif creep.memory.role == "builder":
             builder.run_builder(creep)
 
+    # Run Towers
+    for struct in Object.keys(Game.structures):
+        s = Game.structures[struct]
+        if s.structureType == STRUCTURE_TOWER:
+            tower.run_tower(s)
 
 module.exports.loop = main
