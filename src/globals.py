@@ -21,7 +21,7 @@ MAX_BUILDERS = 2
 DEBUG_HARVESTERS = False
 DEBUG_CREEP_CREATION = True
 DEBUG_BUILDERS = True
-HARVESTER_ROADS = True
+HARVESTER_ROADS = False
 DEBUG_SOURCE_SELECTION = False
 DEBUG_TOWERS = True
 
@@ -62,7 +62,7 @@ def getSource(creep):
             print("Both sources taken, picking random source")
         return sources[_.random(0, sources.length - 1)]
 
-def getBrokenRoad(creep, closest = True, hitsMin = 500):
+def getBrokenRoad(creep, closest = True, hitsMin = 1000):
     """
     Gets a road in the same room as a creep with hits less than hitsMin
     :param creep: The creep to run
