@@ -101,12 +101,10 @@ def run_builder(creep):
 
             elif target.structureType == STRUCTURE_CONTROLLER:
                 result = creep.upgradeController(target)
-                if globals.DEBUG_BUILDERS:
-                    print(creep.name + " attempting to upgrade controller with result: " + result)
                 if result == ERR_INVALID_TARGET:
                     #done upgrading
                     del creep.memory.target
-                elif result != ERR_NOT_IN_RANGE:
+                elif result != ERR_NOT_IN_RANGE and result != OK:
                     print("[{}] Unknown result from creep.upgradeController({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
             else:
                 #in this case, the target was likely completed as this creep was on the way
