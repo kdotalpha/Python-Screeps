@@ -46,19 +46,32 @@ def run_builder(creep):
         # If we're near the source, harvest it - otherwise, move to it.
         if creep.pos.isNearTo(source):
             result = creep.harvest(source)
+            if result == ERR_NOT_ENOUGH_RESOURCES:
+                #we've mined this out, continue filling but delete this source
+                creep.say("🔄 new source")
+                del creep.memory.source
             if result != OK:
                 print("[{}] Unknown result from creep.harvest({}): {}".format(creep.name, source, result))
         else:
             creep.moveTo(source, {"visualizePathStyle": { "stroke": "#ffffff" } })
+
     else:
         # If we have a saved target, use it
         if creep.memory.target:
             target = Game.getObjectById(creep.memory.target)
+            if target == None:
+                del creep.memory.target
         else:
-            #get the closest construction site, command action here is BUILD
-            target = _(creep.room.find(FIND_CONSTRUCTION_SITES)).first()
+            #highest priority is giving some energy to towers that are completely empty, command action is TRANSFER
+            target = globals.getTowers(creep, True, True)
             if globals.DEBUG_BUILDERS and target:                
-                print(creep.name + " build target: " + target.structureType)
+                print(creep.name + " prioritizing filling tower with min energy: " + target.structureType)
+            
+            #get the closest construction site, command action here is BUILD
+            if not target:
+                target = _(creep.room.find(FIND_CONSTRUCTION_SITES)).first()
+                if globals.DEBUG_BUILDERS and target:                
+                    print(creep.name + " build target: " + target.structureType)
             
             #If there is nothing to build, prioritize filling towers energy, command action is TRANSFER
             if not target:
@@ -79,6 +92,7 @@ def run_builder(creep):
                     print(creep.name + " fixing road: " + target.structureType)
 
             #If there's truly nothing else to do, become a harvester, command action is upgradeController or TRANSFER
+            #TODO: Put energy in storage instead
             if not target:                
                 target = globals.getEnergyStorageStructure(creep, False, True)
                 if globals.DEBUG_BUILDERS and target:
@@ -114,6 +128,9 @@ def run_builder(creep):
                     del creep.memory.target
                 elif result != ERR_NOT_IN_RANGE:
                     print("[{}] Unknown result from creep.upgradeController({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
+            else:
+                #in this case, the target was likely completed as this creep was on the way
+                del creep.memory.target
 
             #keep getting closer
             creep.moveTo(target, {"visualizePathStyle": { "stroke": "#ffffff" } })

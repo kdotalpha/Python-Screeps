@@ -19,7 +19,7 @@ __pragma__('noalias', 'update')
 MAX_HARVESTERS = 3
 MAX_BUILDERS = 2
 DEBUG_HARVESTERS = False
-DEBUG_CREEP_CREATION = True
+DEBUG_CREEP_CREATION = False
 DEBUG_BUILDERS = True
 HARVESTER_ROADS = True
 DEBUG_SOURCE_SELECTION = False
@@ -95,8 +95,11 @@ def getTowers(creep, closest = True, onlyEmpty = False):
     Gets a tower in the same room as a creep
     :param creep: The creep to run
     :param closest: Whether to find the closest tower
-    :param onlyEmpty: If set to true, only return towers that are completely empty on power
+    :param onlyEmpty: If set to true, only return towers that are completely empty on power. Always returns closest
     """
+    if onlyEmpty:
+        return creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": lambda s: ((s.structureType == STRUCTURE_TOWER and s.store.getUsedCapacity(RESOURCE_ENERGY) == 0)) })
+
     if not closest:
         return _(creep.room.find(FIND_MY_STRUCTURES)) \
                     .filter(lambda s: ((s.structureType == STRUCTURE_TOWER) and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) \
