@@ -22,7 +22,7 @@ DEBUG_HARVESTERS = False
 DEBUG_CREEP_CREATION = False
 DEBUG_BUILDERS = False
 HARVESTER_ROADS = False
-DEBUG_SOURCE_SELECTION = False
+DEBUG_SOURCE_SELECTION = True
 DEBUG_TOWERS = False
 
 def GetCreepByName(name):
@@ -34,6 +34,13 @@ def GetCreepByName(name):
 def getSource(creep):
     #source = _.sample(creep.room.find(FIND_SOURCES))
     #TODO: Add dropped resources
+    #If there is a dropped source, just go there
+    dropped_sources = _(creep.room.find(FIND_DROPPED_RESOURCES)).first()
+    if dropped_sources:
+        if DEBUG_SOURCE_SELECTION:
+            print("Picking up dropped resources")
+        return dropped_sources
+
     sources = creep.room.find(FIND_SOURCES)
     unusedSources = []
     for source in sources:

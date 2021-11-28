@@ -1,5 +1,6 @@
 from defs import *
 import globals
+import harvester
 
 __pragma__('noalias', 'name')
 __pragma__('noalias', 'undefined')
@@ -35,26 +36,7 @@ def run_builder(creep):
         
     # calling into creep.memory.X is a boolean, unless you use Game.getObjectById to get the value
     if creep.memory.filling:
-        # If we have a saved source, use it
-        if creep.memory.source:
-            source = Game.getObjectById(creep.memory.source)
-        else:
-            # Get a new source and save it
-            source = globals.getSource(creep)
-            creep.memory.source = source.id
-
-        # If we're near the source, harvest it - otherwise, move to it.
-        if creep.pos.isNearTo(source):
-            result = creep.harvest(source)
-            if result == ERR_NOT_ENOUGH_RESOURCES:
-                #we've mined this out, continue filling but delete this source
-                creep.say("🔄 new source")
-                del creep.memory.source
-            if result != OK:
-                print("[{}] Unknown result from creep.harvest({}): {}".format(creep.name, source, result))
-        else:
-            creep.moveTo(source, {"visualizePathStyle": { "stroke": "#ffffff" } })
-
+        harvester.fillCreep(creep)
     else:
         # If we have a saved target, use it
         if creep.memory.target:
