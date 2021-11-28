@@ -16,6 +16,7 @@ def fillCreep(creep):
         source = Game.getObjectById(creep.memory.source)
         if source == None:
             del creep.memory.source
+            return
     else:
         # Get a random new source and save it
         source = globals.getSource(creep)
@@ -36,7 +37,7 @@ def fillCreep(creep):
             print("[{}] Unknown result from creep.harvest({}): {}".format(creep.name, source, result))
             del creep.memory.source
     else:
-        if not (creep.pos.getRangeTo(source) == 2 and source.pos.findInRange(FIND_MY_CREEPS, 1) != 0):
+        if not (creep.pos.getRangeTo(source) == 2 and source.pos.findInRange(FIND_MY_CREEPS, 1) != 0) or source.energyCapacity == undefined:
             creep.moveTo(source, {"visualizePathStyle": { "stroke": "#ffffff" } })
 
 

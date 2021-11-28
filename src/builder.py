@@ -16,7 +16,6 @@ def run_builder(creep):
     """
     Runs a creep as a builder.
     :param creep: The creep to run
-    :param num_creeps: The total number of creeps in the room
     """
     
     # If we're full, stop filling up and remove the saved source
@@ -66,12 +65,6 @@ def run_builder(creep):
                 target = globals.getEnergyStorageStructure(creep)
                 if globals.DEBUG_BUILDERS and target:
                     print(creep.name + " refilling energy: " + target.structureType)
-            
-            #If there is nothing to fill, fix broken roads, command action is REPAIR
-            if not target:
-                target = globals.getBrokenRoad(creep)
-                if globals.DEBUG_BUILDERS and target:
-                    print(creep.name + " fixing road: " + target.structureType)
 
             #If there's truly nothing else to do, become a harvester, command action is upgradeController or TRANSFER
             #TODO: Put energy in storage instead
@@ -79,15 +72,18 @@ def run_builder(creep):
                 target = globals.getEnergyStorageStructure(creep, False, True)
                 if globals.DEBUG_BUILDERS and target:
                     print(creep.name + " transfering energy: " + target.structureType)
+            
             if globals.DEBUG_BUILDERS:
                 print("Build target is " + target)
-            
+            #set the memory target
             creep.memory.target = target.id
         
         #try to perform the appropriate action and get closer, if the error is that you're not in range, just get closer
         #Check if this a target we need to BUILD
         if target: 
-            if target.progress != undefined:
+            if target.progress != undefined and target.structureType != STRUCTURE_CONTROLLER:
+                if globals.DEBUG_BUILDERS:
+                    print("building " + target)
                 result = creep.build(target)
                 if result == ERR_INVALID_TARGET:
                     #done building
@@ -105,6 +101,8 @@ def run_builder(creep):
 
             elif target.structureType == STRUCTURE_CONTROLLER:
                 result = creep.upgradeController(target)
+                if globals.DEBUG_BUILDERS:
+                    print(creep.name + " attempting to upgrade controller with result: " + result)
                 if result == ERR_INVALID_TARGET:
                     #done upgrading
                     del creep.memory.target

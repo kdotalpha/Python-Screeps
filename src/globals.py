@@ -20,9 +20,9 @@ MAX_HARVESTERS = 3
 MAX_BUILDERS = 2
 DEBUG_HARVESTERS = False
 DEBUG_CREEP_CREATION = True
-DEBUG_BUILDERS = False
+DEBUG_BUILDERS = True
 HARVESTER_ROADS = True
-DEBUG_SOURCE_SELECTION = False
+DEBUG_SOURCE_SELECTION = True
 DEBUG_TOWERS = False
 
 def GetCreepByName(name):
@@ -37,9 +37,14 @@ def getSource(creep):
     #If there is a dropped source, just go there
     dropped_sources = _(creep.room.find(FIND_DROPPED_RESOURCES)).first()
     if dropped_sources:
-        if DEBUG_SOURCE_SELECTION:
-            print("Picking up dropped resources")
-        return dropped_sources
+        #give a 50/50 chance of going after the source
+        if _.random(0,1) == 0:
+            if DEBUG_SOURCE_SELECTION:
+                print("Picking up dropped resources")
+            return dropped_sources
+        else:
+            if DEBUG_SOURCE_SELECTION:
+                print("dropped resource detected, but not going after it")
 
     sources = creep.room.find(FIND_SOURCES)
     unusedSources = []
@@ -137,16 +142,6 @@ def getEnergyStorageStructure(creep, closest = True, controller = False):
             target = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": \
                 lambda s: ((s.structureType == STRUCTURE_CONTROLLER)) })
         return target        
-           
-        if not closest:
-            return _(creep.room.find(FIND_MY_STRUCTURES)) \
-                    .filter(lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION)
-                                    and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) or s.structureType == STRUCTURE_CONTROLLER) \
-                    .sample()
-        else:
-            return creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": \
-                lambda s: (((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION) 
-                        and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) or s.structureType == STRUCTURE_CONTROLLER) })
     else:
         if not closest:
             return _(creep.room.find(FIND_MY_STRUCTURES)) \
