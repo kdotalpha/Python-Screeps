@@ -20,8 +20,8 @@ MAX_HARVESTERS = 3
 MAX_BUILDERS = 2
 DEBUG_HARVESTERS = False
 DEBUG_CREEP_CREATION = False
-DEBUG_BUILDERS = True
-HARVESTER_ROADS = True
+DEBUG_BUILDERS = False
+HARVESTER_ROADS = False
 DEBUG_SOURCE_SELECTION = False
 DEBUG_TOWERS = False
 
@@ -62,7 +62,7 @@ def getSource(creep):
             print("Both sources taken, picking random source")
         return sources[_.random(0, sources.length - 1)]
 
-def getBrokenRoad(creep, closest = True, hitsMinPercentage = 1):
+def getBrokenRoad(creep, closest = True, hitsMinPercentage = 0.5):
     """
     Gets a road in the same room as a creep with hits less than hitsMin
     :param creep: The creep to run
@@ -71,12 +71,12 @@ def getBrokenRoad(creep, closest = True, hitsMinPercentage = 1):
     """
     if not closest:
         return _(creep.room.find(FIND_STRUCTURES)) \
-                    .filter(lambda s: (s.structureType == STRUCTURE_ROAD and s.hits < (s.hits * hitsMinPercentage))) \
+                    .filter(lambda s: (s.structureType == STRUCTURE_ROAD and s.hits < (s.hitsMax * hitsMinPercentage))) \
                     .first()
     else:
-        return creep.pos.findClosestByRange(FIND_STRUCTURES, { "filter": lambda s: ((s.structureType == STRUCTURE_ROAD and s.hits < (s.hits * hitsMinPercentage))) })        
+        return creep.pos.findClosestByRange(FIND_STRUCTURES, { "filter": lambda s: ((s.structureType == STRUCTURE_ROAD and (s.hits < (s.hits * hitsMinPercentage)))) })        
 
-def getBrokenStructures(creep, closest = True, hitsMinPercentage=50):
+def getBrokenStructures(creep, closest = True, hitsMinPercentage=1):
     """
     Gets a road in the same room as a creep with hits less than hitsMin
     :param creep: The creep to run
@@ -88,7 +88,7 @@ def getBrokenStructures(creep, closest = True, hitsMinPercentage=50):
                     .filter(lambda s: (s.hits < (s.hits * hitsMinPercentage))) \
                     .first()
     else:
-        return creep.pos.findClosestByRange(FIND_STRUCTURES, { "filter": lambda s: ((s.hits < (s.hits * hitsMinPercentage))) })
+        return creep.pos.findClosestByRange(FIND_STRUCTURES, { "filter": lambda s: ((s.hits < (s.hitsMax * hitsMinPercentage))) })
 
 def getTowers(creep, closest = True, onlyEmpty = False):
     """

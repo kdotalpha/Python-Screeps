@@ -13,12 +13,10 @@ __pragma__('noalias', 'update')
 def run_tower(tower):
     #start by destroying hostile creeps
 
-    #if there is nothing, move on to doing repairs of my creeps
-
-    #then finally do repairs of my structures, start with just roads
-    target = globals.getBrokenRoad(tower)
-
-    if target and target.structureType == STRUCTURE_ROAD:
-        result = tower.repair(target)
-        if result != OK and globals.DEBUG_TOWERS:
-            print("[{}] Unknown result from tower.repair({}, {}): {}".format(tower.id, target, RESOURCE_ENERGY, result))
+    #if there is nothing, move on to doing repairs of structures 
+    target = globals.getBrokenStructures(tower)
+    if globals.DEBUG_TOWERS:
+        print("Tower target is " + target.structureType)
+    result = tower.repair(target)
+    if result != OK and globals.DEBUG_TOWERS:
+        print("[{}] Unknown result from tower.repair({}, {}): {}".format(tower.id, target, RESOURCE_ENERGY, result))
