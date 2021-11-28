@@ -53,7 +53,23 @@ def main():
 
             #TODO: Replace with more creative spawning logic
             #If we have less than the total max of harvesters, create some harvesters
-            if num_harvesters < globals.MAX_HARVESTERS and spawn.room.energyAvailable >= 1300:
+            if num_harvesters == 0:
+                #emergency situation, create the best harvester we can
+                #seriously need to clean this garbo up
+                creep_name = Game.time
+                energyUnits = _(spawn.room.energyAvailable / 200).floor()
+                creepParts = []
+                for part in range(0, energyUnits):
+                    creepParts.append(MOVE)
+                    creepParts.append(WORK)
+                    creepParts.append(CARRY)
+                result = spawn.spawnCreep(creepParts, creep_name, { "memory": { "role": "harvester"} })
+                if result != OK:
+                    print("Ran into error emergency harvester: " + result)
+                elif globals.DEBUG_CREEP_CREATION:
+                    print("Creating a new emergency harvester named " + creep_name)
+
+            elif num_harvesters < globals.MAX_HARVESTERS and spawn.room.energyAvailable >= 1300:
                 #create a super harvester
                 creep_name = Game.time
                 result = spawn.spawnCreep([MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, CARRY], creep_name, { "memory": { "role": "harvester"} })
