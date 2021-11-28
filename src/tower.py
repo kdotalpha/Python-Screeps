@@ -14,7 +14,7 @@ def run_tower(tower):
     #start by destroying hostile creeps
 
     #if there is nothing, move on to doing repairs of structures 
-    target = globals.getBrokenStructures(tower)
+    target = globals.getBrokenRoad(tower)
     if globals.DEBUG_TOWERS:
         print("Tower target is " + target.structureType)
     result = tower.repair(target)
