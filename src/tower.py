@@ -19,7 +19,6 @@ def run_tower(tower):
     target = globals.getBrokenRoad(tower)
 
     if target and target.structureType == STRUCTURE_ROAD:
-        print(tower.id + " fixing road: " + target.structureType)
         result = tower.repair(target)
-        if result != OK:
+        if result != OK and globals.DEBUG_TOWERS:
             print("[{}] Unknown result from tower.repair({}, {}): {}".format(tower.id, target, RESOURCE_ENERGY, result))

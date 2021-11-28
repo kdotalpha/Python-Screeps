@@ -48,7 +48,7 @@ def main():
                         num_harvesters += 1
                     elif creep.memory.role == "builder":
                         num_builders += 1
-
+            
             num_creeps = num_harvesters + num_builders
 
             #TODO: Replace with more creative spawning logic
@@ -70,6 +70,16 @@ def main():
                     print("Ran into error creating super creep: " + result)
                 elif globals.DEBUG_CREEP_CREATION:
                     print("Creating a new super builder named " + creep_name)
+            """
+            elif num_harvesters < globals.MAX_HARVESTERS and spawn.room.energyAvailable >= 200:
+                #create a basic harvester to get going again
+                creep_name = Game.time
+                result = spawn.spawnCreep([WORK, MOVE, CARRY], creep_name, { "memory": { "role": "harvester"} })
+                if result != OK:
+                    print("Ran into error creating basic harvester: " + result)
+                elif globals.DEBUG_CREEP_CREATION:
+                    print("Creating a new basic harvester named " + creep_name)
+            """
         
     # Run creeps
     for name in Object.keys(Game.creeps):

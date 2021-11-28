@@ -44,12 +44,15 @@ def run_harvester(creep, num_creeps):
         else:
             # Get a random new source and save it
             source = globals.getSource(creep)
-            #source = _.sample(creep.room.find(FIND_SOURCES))
             creep.memory.source = source.id
 
         # If we're near the source, harvest it - otherwise, move to it.
         if creep.pos.isNearTo(source):
             result = creep.harvest(source)
+            if result == ERR_NOT_ENOUGH_RESOURCES:
+                #we've mined this out, continue filling but delete this source
+                creep.say("🔄 new source")
+                del creep.memory.source
             if result != OK:
                 print("[{}] Unknown result from creep.harvest({}): {}".format(creep.name, source, result))
         else:

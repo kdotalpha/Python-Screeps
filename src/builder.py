@@ -54,8 +54,6 @@ def run_builder(creep):
         # If we have a saved target, use it
         if creep.memory.target:
             target = Game.getObjectById(creep.memory.target)
-            if not target:
-                del creep.memory.target
         else:
             #get the closest construction site, command action here is BUILD
             target = _(creep.room.find(FIND_CONSTRUCTION_SITES)).first()
@@ -77,8 +75,6 @@ def run_builder(creep):
             #If there is nothing to fill, fix broken roads, command action is REPAIR
             if not target:
                 target = globals.getBrokenRoad(creep)
-                if globals.DEBUG_BUILDERS:
-                    print("road target: " + target)
                 if globals.DEBUG_BUILDERS and target:
                     print(creep.name + " fixing road: " + target.structureType)
 
@@ -87,7 +83,9 @@ def run_builder(creep):
                 target = globals.getEnergyStorageStructure(creep, False, True)
                 if globals.DEBUG_BUILDERS and target:
                     print(creep.name + " transfering energy: " + target.structureType)
-
+            if globals.DEBUG_BUILDERS:
+                print("Build target is " + target)
+            
             creep.memory.target = target.id
         
         #try to perform the appropriate action and get closer, if the error is that you're not in range, just get closer
@@ -108,15 +106,6 @@ def run_builder(creep):
                     del creep.memory.target
                 elif result != ERR_NOT_IN_RANGE:
                     print("[{}] Unknown result from creep.transfer({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
-            
-            #TODO: Update this to repair all of my structures
-            elif target.structureType == STRUCTURE_ROAD:
-                result = creep.repair(target)
-                if result == ERR_INVALID_TARGET:
-                    #done repairing
-                    del creep.memory.target
-                elif result != ERR_NOT_IN_RANGE:
-                    print("[{}] Unknown result from creep.repair({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
 
             elif target.structureType == STRUCTURE_CONTROLLER:
                 result = creep.upgradeController(target)
@@ -128,6 +117,17 @@ def run_builder(creep):
 
             #keep getting closer
             creep.moveTo(target, {"visualizePathStyle": { "stroke": "#ffffff" } })
+            """
+            #TODO: Update this to repair all of my structures
+            elif target.structureType == STRUCTURE_ROAD:
+                result = creep.repair(target)
+                if result == ERR_INVALID_TARGET:
+                    #done repairing
+                    del creep.memory.target
+                elif result != ERR_NOT_IN_RANGE:
+                    print("[{}] Unknown result from creep.repair({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
+            """            
+
 
 """
         is_close = True      
