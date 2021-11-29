@@ -88,7 +88,7 @@ def getBrokenRoad(creep, closest = True, hitsMinPercentage = 1):
     else:
         return creep.pos.findClosestByRange(FIND_STRUCTURES, { "filter": lambda s: ((s.structureType == STRUCTURE_ROAD and (s.hits < (s.hitsMax * hitsMinPercentage)))) })        
 
-def getBrokenStructures(creep, closest = True, hitsMinPercentage=1):
+def getBrokenStructure(creep, closest = True, hitsMinPercentage=1):
     """
     Gets a road in the same room as a creep with hits less than hitsMin
     :param creep: The creep to run
@@ -96,11 +96,11 @@ def getBrokenStructures(creep, closest = True, hitsMinPercentage=1):
     :param hitsMinPercentage: The percentage to repair the road up to, between 0 and 1
     """
     if not closest:
-        return _(creep.room.find(FIND_STRUCTURES)) \
+        return _(creep.room.find(FIND_MY_STRUCTURES)) \
                     .filter(lambda s: (s.hits < (s.hitsMax * hitsMinPercentage))) \
                     .first()
     else:
-        return creep.pos.findClosestByRange(FIND_STRUCTURES, { "filter": lambda s: ((s.hits < (s.hitsMax * hitsMinPercentage))) })
+        return creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": lambda s: ((s.hits < (s.hitsMax * hitsMinPercentage))) })
 
 def getTowers(creep, closest = True, onlyEmpty = False):
     """
