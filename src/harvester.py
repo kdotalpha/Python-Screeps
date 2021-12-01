@@ -93,6 +93,8 @@ def run_harvester(creep, num_creeps):
 
         # If we are targeting a spawn or extension, we need to be directly next to it - otherwise, we can be 3 away.
         # Controllers do not have an energy store, so it returns undefined and thus fails out
+        if not target:
+            del creep.memory.target
         if target.store:
             is_close = creep.pos.isNearTo(target)
         else:

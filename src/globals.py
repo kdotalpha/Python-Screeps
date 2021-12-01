@@ -16,8 +16,8 @@ __pragma__('noalias', 'type')
 __pragma__('noalias', 'update')
 
 
-MAX_HARVESTERS = 3
-MAX_BUILDERS = 2
+MAX_HARVESTERS = 1
+MAX_BUILDERS = 4
 DEBUG_HARVESTERS = False
 DEBUG_CREEP_CREATION = True
 DEBUG_BUILDERS = False
