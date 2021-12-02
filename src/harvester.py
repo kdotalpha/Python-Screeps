@@ -37,8 +37,19 @@ def fillCreep(creep):
             print("[{}] Unknown result from creep.harvest({}): {}".format(creep.name, source, result))
             del creep.memory.source
     else:
-        if not (creep.pos.getRangeTo(source) == 2 and source.pos.findInRange(FIND_MY_CREEPS, 1) != 0) or source.energyCapacity == undefined:
+        #wait if the source is currently being used by someone else, so as not to crowd them in
+        waiting = (creep.pos.getRangeTo(source) == 2 and source.pos.findInRange(FIND_MY_CREEPS, 1) != 0)
+        #store how long they have been waiting for later debug purposes
+        if waiting:
+            if creep.memory.waiting:
+                creep.memory.waiting += 1
+            else:
+                creep.memory.waiting = 1
+        #If I'm not waiting, or the source is a dropped resource, move closer
+        if not waiting or source.energyCapacity == undefined:
             creep.moveTo(source, {"visualizePathStyle": { "stroke": "#ffffff" } })
+            del creep.memory.waiting
+        
 
 
 def run_harvester(creep, num_creeps):

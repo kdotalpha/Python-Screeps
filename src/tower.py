@@ -31,11 +31,14 @@ def run_tower(tower):
                     print("[{}] Unknown result from tower.heal({}, {}): {}".format(tower.id, target, RESOURCE_ENERGY, result))
                 break
 
-    #if there is nothing to heal, move on to doing repairs of my structures 
-    if not target:
-        target = globals.getBrokenStructure(tower)
+    #if there is nothing to heal, move on to doing repairs of my structures until we get down to a certain reserve, which we save for killing enemies
+    #fix roads before other structures
+    #TODO: Create a full structure priority list
+    if not target and tower.store.getUsedCapacity(RESOURCE_ENERGY) >= globals.TOWER_ENERGY_RESERVE_PERCENTAGE * tower.store.getCapacity(RESOURCE_ENERGY):
+        if globals.FIX_ROADS:
+            target = globals.getBrokenRoad(tower)        
         if not target:
-            target = globals.getBrokenRoad(tower)
+            target = globals.getBrokenStructure(tower)
         if target:
             if globals.DEBUG_TOWERS:
                 print("Tower repair target is " + target.structureType)

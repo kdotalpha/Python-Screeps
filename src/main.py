@@ -53,11 +53,12 @@ def main():
 
             #TODO: Replace with more creative spawning logic
             #If we have less than the total max of harvesters, create a harvester
-            if (num_harvesters < globals.MAX_HARVESTERS and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable) or num_harvesters == 0:
+            if ((num_harvesters < globals.MAX_HARVESTERS and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable) or num_harvesters == 0) \
+                and spawn.room.energyAvailable >= 250:
                 createHarvesterBuilder = True
                 memory = { "memory": { "role": "harvester"} }
             #otherwise, create a builder
-            elif num_builders < globals.MAX_BUILDERS and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable:
+            elif num_builders < globals.MAX_BUILDERS and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable and spawn.room.energyAvailable >= 250:
                 createHarvesterBuilder = True
                 memory = { "memory": { "role": "builder"} }
             
