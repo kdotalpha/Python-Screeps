@@ -53,8 +53,8 @@ def main():
             
             num_creeps = num_harvesters + num_builders + (num_linkedPairs * 2)
 
-            #allRoadHarvesters = spawn.room.find(FIND_MY_CREEPS, {"filter": lambda s: ((s.memory.role == "harvester" and s.allRoads == True))}).length == num_harvesters and num_harvesters != 0
-            allRoadHarvesters = True
+            allRoadHarvesters = spawn.room.find(FIND_MY_CREEPS, {"filter": lambda s: ((s.memory.role == "harvester" and s.allRoads == True))}).length == num_harvesters and num_harvesters != 0
+            #allRoadHarvesters = True
 
             #If we have less than the total max of harvesters, create a harvester
             if ((num_harvesters < globals.MAX_HARVESTERS and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable) or num_harvesters == 0) \
