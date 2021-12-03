@@ -53,16 +53,16 @@ def main():
             
             num_creeps = num_harvesters + num_builders + (num_linkedPairs * 2)
 
-            #allRoadHarvesters = spawn.room.find(FIND_MY_CREEPS, {"filter": lambda s: ((s.memory.role == "harvester" and s.allRoads == True))}).length
-            allRoadHarvesters = False
+            #allRoadHarvesters = spawn.room.find(FIND_MY_CREEPS, {"filter": lambda s: ((s.memory.role == "harvester" and s.allRoads == True))}).length == num_harvesters and num_harvesters != 0
+            allRoadHarvesters = True
 
             #If we have less than the total max of harvesters, create a harvester
             if ((num_harvesters < globals.MAX_HARVESTERS and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable) or num_harvesters == 0) \
-                and spawn.room.energyAvailable >= 250:
+                and spawn.room.energyAvailable >= 300:
                 createHarvesterBuilder = True
                 memory = { "memory": { "role": "harvester"} }                
             #otherwise, create a builder
-            elif num_builders < globals.MAX_BUILDERS and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable and spawn.room.energyAvailable >= 250:
+            elif num_builders < globals.MAX_BUILDERS and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable and spawn.room.energyAvailable >= 300:
                 createHarvesterBuilder = True
                 memory = { "memory": { "role": "builder"} }
             
@@ -72,33 +72,73 @@ def main():
                 creep_name = Game.time
                 energy = spawn.room.energyAvailable
                 creepParts = []
-                if allRoadHarvesters:
-                    creepParts.append(MOVE)
-                    energy -= 50
-                energyUnits = _(energy / 250).floor()
+                energyUnits = _(energy / 300).floor()
                 energyUnits = _.min([energyUnits, 12500])
-
+                energyRemainder = energy - (energyUnits * 300)
+                print("energy remainder: " + energyRemainder)
                 for part in range(0, energyUnits):
+                    #for each energy unit of 300
                     if allRoadHarvesters:
+                        creepParts.append(MOVE)
+                        creepParts.append(MOVE)
+                        creepParts.append(WORK)
+                        creepParts.append(WORK)
+                        creepParts.append(CARRY)
+                    else:
+                        creepParts.append(MOVE)
+                        creepParts.append(MOVE)
+                        creepParts.append(MOVE)
+                        creepParts.append(WORK)
+                        creepParts.append(CARRY)
+
+                #python really needs a switch block
+                if energyRemainder == 250:
+                    if allRoadHarvesters:
+                        creepParts.append(MOVE)
+                        creepParts.append(WORK)
+                        creepParts.append(CARRY)
+                        creepParts.append(CARRY)                        
+                    else:
+                        creepParts.append(MOVE)
+                        creepParts.append(MOVE)
+                        creepParts.append(CARRY)
+                        creepParts.append(WORK)                        
+
+                elif energyRemainder == 200:
+                    if allRoadHarvesters:
+                        creepParts.append(MOVE)
+                        creepParts.append(CARRY)
                         creepParts.append(WORK)
                     else:
                         creepParts.append(MOVE)
                         creepParts.append(MOVE)
-
-                    creepParts.append(WORK)
-                    creepParts.append(CARRY)
-                while energy >= (energyUnits * 250) + 100:
-                    creepParts.append(WORK)
-                    energy -= 100
-                while energy >= (energyUnits * 250) + 50:
-                    creepParts.append(CARRY)
-                    energy -= 50
+                        creepParts.append(CARRY)
+                        creepParts.append(CARRY)
+                elif energyRemainder == 150:
+                    if allRoadHarvesters:
+                        creepParts.append(MOVE)
+                        creepParts.append(WORK)
+                    else:
+                        creepParts.append(MOVE)
+                        creepParts.append(MOVE)
+                        creepParts.append(CARRY)
+                elif energyRemainder == 100:
+                    if allRoadHarvesters:
+                        creepParts.append(WORK)
+                    else:
+                        creepParts.append(MOVE)
+                        creepParts.append(CARRY)
+                elif energyRemainder == 50:
+                    if allRoadHarvesters:
+                        creepParts.append(CARRY)
+                    else:
+                        creepParts.append(MOVE)
                         
                 result = spawn.spawnCreep(creepParts, creep_name, memory)
                 if result != OK:
-                    print("Ran into error creating creep: " + result + " with energy " + energyUnits*250 + " with role: " + memory.memory.role + " with parts: " + creepParts)
+                    print("Ran into error creating creep: " + result + " with energy " + energy + " with role: " + memory.memory.role + " with parts: " + creepParts)
                 elif globals.DEBUG_CREEP_CREATION:
-                    print("Creating a new creep named " + creep_name + " with energy " + energyUnits*250 + " with role: " + memory.memory.role + " with parts: " + creepParts)
+                    print("Creating a new creep named " + creep_name + " with energy " + energy + " with role: " + memory.memory.role + " with parts: " + creepParts)
 
         
     # Run creeps

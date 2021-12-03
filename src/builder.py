@@ -41,7 +41,8 @@ def run_builder(creep):
             del creep.memory.target
     if not creep.memory.target:
         #highest priority is giving some energy to towers that are completely empty, command action is TRANSFER
-        target = globals.getTowers(creep, True, True)
+        target = globals.getTower(creep, 0)
+        #target = globals.getTowers(creep, True, True)
         if globals.DEBUG_BUILDERS and target:                
             print(creep.name + " prioritizing filling tower with min energy: " + target.structureType)
         
@@ -51,17 +52,23 @@ def run_builder(creep):
             if globals.DEBUG_BUILDERS and target:                
                 print(creep.name + " build target: " + target.structureType)
         
-        #If there is nothing to build, prioritize filling towers energy, command action is TRANSFER
+        #If there is nothing to build, prioritize filling towers energy to 80%, command action is TRANSFER
         if not target:
-            target = globals.getTowers(creep)
+            target = globals.getTower(creep)
             if globals.DEBUG_BUILDERS and target:
-                print(creep.name + " filling tower: " + target.structureType)  
+                print(creep.name + " filling tower to 80%: " + target.structureType)  
         
-        #If there is nothing to build, prioritize filling spawns and extensions with energy, command action is TRANSFER
+        #Then prioritize filling spawns and extensions with energy, command action is TRANSFER
         if not target:
             target = globals.getEnergyStorageStructure(creep)
             if globals.DEBUG_BUILDERS and target:
                 print(creep.name + " refilling energy: " + target.structureType)
+        
+        #Then fill towers to 100%
+        if not target:
+            target = globals.getTower(creep, 1)
+            if globals.DEBUG_BUILDERS and target:
+                print(creep.name + " filling tower to max: " + target.structureType)  
 
         #If there's truly nothing else to do, fill storage. If storage is full, upgrade controller 
         # Command action is upgradeController or TRANSFER

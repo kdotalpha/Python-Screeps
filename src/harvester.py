@@ -39,6 +39,7 @@ def fillCreep(creep, customSource = False):
             #we've mined this out, continue filling but delete this source
             creep.say("🔄 OOE")
             del creep.memory.source
+            creep.memory.filling = False
         elif result != OK:
             print("[{}] Unknown result from creep.harvest({}): {}".format(creep.name, source, result))
             del creep.memory.source
@@ -81,6 +82,7 @@ def run_harvester(creep, num_creeps):
         creep.memory.allRoads = True
     #if it has always been on all roads, check to see for every step if it is still walking on roads
     #if it ever steps on something that is not a road, it will remain false for its lifetime
+
     if creep.memory.allRoads:
         terrain = creep.room.lookAt(creep)
         foundRoad = False
@@ -88,6 +90,8 @@ def run_harvester(creep, num_creeps):
             if thing.type == LOOK_STRUCTURES and thing.structure.structureType == STRUCTURE_ROAD:
                 foundRoad = True
         creep.memory.allRoads = foundRoad
+        if foundRoad == False:
+            creep.say("No road")
 
     # If we're full, stop filling up and remove the saved source
     if creep.memory.filling and creep.store.getFreeCapacity() == 0:

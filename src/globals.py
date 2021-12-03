@@ -40,15 +40,10 @@ def getSource(creep):
     #If there is a dropped source, just go there
     dropped_sources = _(creep.room.find(FIND_DROPPED_RESOURCES)).first()
     if dropped_sources:
-        #give a 50/50 chance of going after the source
-        if _.random(0,1) == 0:
-            if DEBUG_SOURCE_SELECTION:
-                print("Picking up dropped resources")
-            return dropped_sources
-        else:
-            if DEBUG_SOURCE_SELECTION:
-                print("dropped resource detected, but not going after it")
-
+        if DEBUG_SOURCE_SELECTION:
+            print("Picking up dropped resources")
+        return dropped_sources
+    
     sources = creep.room.find(FIND_SOURCES, {"filter": lambda s: ((s.energy > 0))})
     unusedSources = []
     for source in sources:
@@ -104,6 +99,15 @@ def getBrokenStructure(creep, closest = True, hitsMinPercentage=1):
                     .first()
     else:
         return creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": lambda s: ((s.hits < (s.hitsMax * hitsMinPercentage))) })
+
+def getTower(creep, maxEnergyPercentage = 0.8):
+    tower = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { "filter": \
+        lambda s: ((s.structureType == STRUCTURE_TOWER and s.store.getUsedCapacity(RESOURCE_ENERGY) <= s.store.getCapacity(RESOURCE_ENERGY) * maxEnergyPercentage)) })
+    if not tower:
+        tower = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": \
+            lambda s: ((s.structureType == STRUCTURE_TOWER and s.store.getUsedCapacity(RESOURCE_ENERGY) <= s.store.getCapacity(RESOURCE_ENERGY) * maxEnergyPercentage)) })
+    return tower
+
 
 def getTowers(creep, closest = True, onlyEmpty = False):
     """
