@@ -66,10 +66,10 @@ def run_builder(creep):
                 if globals.DEBUG_BUILDERS and target:
                     print(creep.name + " refilling energy: " + target.structureType)
 
-            #If there's truly nothing else to do, become a harvester, command action is upgradeController or TRANSFER
-            #TODO: Put energy in storage instead
+            #If there's truly nothing else to do, fill storage. If storage is full, upgrade controller 
+            # Command action is upgradeController or TRANSFER
             if not target:                
-                target = globals.getEnergyStorageStructure(creep, False, True)
+                target = globals.getEnergyStorageStructure(creep, False, True, True)
                 if globals.DEBUG_BUILDERS and target:
                     print(creep.name + " transfering energy: " + target.structureType)
             
@@ -91,7 +91,8 @@ def run_builder(creep):
                 elif result != OK and result != ERR_NOT_IN_RANGE:
                     print("[{}] Unknown result from creep.build({}): {}".format(creep.name, target, result))
 
-            elif target.structureType == STRUCTURE_TOWER or target.structureType == STRUCTURE_SPAWN or target.structureType == STRUCTURE_EXTENSION:
+            elif target.structureType == STRUCTURE_TOWER or target.structureType == STRUCTURE_SPAWN or target.structureType == STRUCTURE_EXTENSION \
+                or target.structureType == STRUCTURE_STORAGE:
                 result = creep.transfer(target, RESOURCE_ENERGY)
                 if result == OK or result == ERR_FULL:
                     #done transfering
@@ -111,43 +112,4 @@ def run_builder(creep):
                 del creep.memory.target
 
             #keep getting closer
-            creep.moveTo(target, {"visualizePathStyle": { "stroke": "#ffffff" } })
-            """
-            #TODO: Update this to repair all of my structures
-            elif target.structureType == STRUCTURE_ROAD:
-                result = creep.repair(target)
-                if result == ERR_INVALID_TARGET:
-                    #done repairing
-                    del creep.memory.target
-                elif result != ERR_NOT_IN_RANGE:
-                    print("[{}] Unknown result from creep.repair({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
-            """            
-
-
-"""
-        is_close = True      
-
-        if is_close:
-            # If we are targeting a spawn or extension, transfer energy. Otherwise, use upgradeController on it.
-            if target != None and target.store:
-                result = creep.transfer(target, RESOURCE_ENERGY)
-                if result == OK or result == ERR_FULL:
-                    del creep.memory.target
-                else:
-                    print("[{}] Unknown result from creep.transfer({}, {}): {}".format(
-                        creep.name, target, RESOURCE_ENERGY, result))
-            #otherwise, build it
-            else:
-                result = creep.build(target)
-                #may need to add an OK clause here
-                if result == ERR_INVALID_TARGET:
-                    del creep.memory.target
-                elif result != OK:
-                    print("[{}] Unknown result from creep.build({}): {}".format(
-                        creep.name, target, result))
-                # Let the creeps get a little bit closer than required to the controller, to make room for other creeps.
-                if not creep.pos.inRangeTo(target, 1):
-                    creep.moveTo(target, {"visualizePathStyle": { "stroke": "#ffffff" } })
-        else:
-            creep.moveTo(target, {"visualizePathStyle": { "stroke": "#ffffff" } })
-"""
+            creep.moveTo(target, {"visualizePathStyle": { "stroke": "#ffffff" } }) 
