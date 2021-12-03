@@ -53,7 +53,8 @@ def main():
             
             num_creeps = num_harvesters + num_builders + (num_linkedPairs * 2)
 
-            allRoadHarvesters = spawn.room.find(FIND_MY_CREEPS, {"filter": lambda s: ((s.memory.role == "harvester" and s.allRoads == True))}).length
+            #allRoadHarvesters = spawn.room.find(FIND_MY_CREEPS, {"filter": lambda s: ((s.memory.role == "harvester" and s.allRoads == True))}).length
+            allRoadHarvesters = False
 
             #If we have less than the total max of harvesters, create a harvester
             if ((num_harvesters < globals.MAX_HARVESTERS and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable) or num_harvesters == 0) \
@@ -83,7 +84,7 @@ def main():
                     else:
                         creepParts.append(MOVE)
                         creepParts.append(MOVE)
-                        
+
                     creepParts.append(WORK)
                     creepParts.append(CARRY)
                 while energy >= (energyUnits * 250) + 100:
@@ -93,11 +94,11 @@ def main():
                     creepParts.append(CARRY)
                     energy -= 50
                         
-                    result = spawn.spawnCreep(creepParts, creep_name, memory)
-                    if result != OK:
-                        print("Ran into error creating creep: " + result + " with energy " + energyUnits*250 + " with role: " + memory.memory.role + " with parts: " + creepParts)
-                    elif globals.DEBUG_CREEP_CREATION:
-                        print("Creating a new creep named " + creep_name + " with energy " + energyUnits*250 + " with role: " + memory.memory.role + " with parts: " + creepParts)
+                result = spawn.spawnCreep(creepParts, creep_name, memory)
+                if result != OK:
+                    print("Ran into error creating creep: " + result + " with energy " + energyUnits*250 + " with role: " + memory.memory.role + " with parts: " + creepParts)
+                elif globals.DEBUG_CREEP_CREATION:
+                    print("Creating a new creep named " + creep_name + " with energy " + energyUnits*250 + " with role: " + memory.memory.role + " with parts: " + creepParts)
 
         
     # Run creeps

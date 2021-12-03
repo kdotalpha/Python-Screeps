@@ -25,7 +25,7 @@ DEBUG_BUILDERS = False
 HARVESTER_ROADS = True
 DEBUG_SOURCE_SELECTION = False
 DEBUG_TOWERS = False
-FIX_ROADS = False
+FIX_ROADS = True
 TOWER_ENERGY_RESERVE_PERCENTAGE = 0.3
 
 def GetCreepByName(name):
@@ -129,7 +129,7 @@ def getEnergyStorageStructure(creep, closest = True, controller = False, storage
     :param creep: The creep to run
     :param closest: Whether to find the closest energy storage structure
     :param controller: Whether to include the room controller in the available energy storage structures
-    :param storage: Whether to include the room's storage structure in the available energy storage structures
+    :param storage: Whether to include the room's storage structure in the available energy storage structures, overrides controller
     """
     if storage:
         target = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, {"filter": \

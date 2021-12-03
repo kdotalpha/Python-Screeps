@@ -10,7 +10,7 @@ __pragma__('noalias', 'set')
 __pragma__('noalias', 'type')
 __pragma__('noalias', 'update')
 
-def fillCreep(creep):
+def fillCreep(creep, customSource = False):
     # If we have a saved source, use it
     if creep.memory.source:
         source = Game.getObjectById(creep.memory.source)
@@ -19,14 +19,20 @@ def fillCreep(creep):
             return
     else:
         # Get a random new source and save it
-        source = globals.getSource(creep)
+        if customSource:
+            source = customSource
+        else:
+            source = globals.getSource(creep)
         creep.memory.source = source.id
 
     if creep.pos.isNearTo(source):
         # If we're near the source, harvest it - otherwise, move to it.
-        if source.energyCapacity == undefined:
+        if source.structureType == STRUCTURE_STORAGE:
+            creep.say("🔄 storage")
+            result = creep.withdraw(source, RESOURCE_ENERGY)
+        elif source.energyCapacity == undefined:
             creep.say("🔄 pickup")
-            result = creep.pickup(source)   
+            result = creep.pickup(source)
         else: 
             result = creep.harvest(source)
         if result == ERR_NOT_ENOUGH_RESOURCES:
