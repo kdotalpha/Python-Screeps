@@ -82,7 +82,7 @@ def main():
                         creepParts.append(MOVE)
                         creepParts.append(MOVE)
                         creepParts.append(WORK)
-                        creepParts.append(WORK)
+                        creepParts.append(CARRY)
                         creepParts.append(CARRY)
                     else:
                         creepParts.append(MOVE)
