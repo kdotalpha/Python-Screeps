@@ -41,11 +41,16 @@ def run_builder(creep):
         if target == None:
             del creep.memory.target
     if not creep.memory.target:
+        #if I'm holding exotic materials, go deliver those
+        if _.find(creep.store) != creep.store.getUsedCapacity(RESOURCE_ENERGY):
+            target = globals.getEnergyStorageStructure(creep, True, False, True)
+
         #highest priority is giving some energy to towers that are completely empty, command action is TRANSFER
-        target = globals.getTower(creep, 0)
-        #target = globals.getTowers(creep, True, True)
-        if globals.DEBUG_BUILDERS and target:                
-            print(creep.name + " prioritizing filling tower with min energy: " + target.structureType)
+        if not target:
+            target = globals.getTower(creep, 0)
+            #target = globals.getTowers(creep, True, True)
+            if globals.DEBUG_BUILDERS and target:                
+                print(creep.name + " prioritizing filling tower with min energy: " + target.structureType)
         
         #get the closest construction site, command action here is BUILD
         if not target:
@@ -105,6 +110,7 @@ def run_builder(creep):
                     del creep.memory.target
                 elif result != OK and result != ERR_NOT_IN_RANGE:
                     print("[{}] Unknown result from creep.build({}): {}".format(creep.name, target, result))
+                    del creep.memory.target
 
             elif target.structureType == STRUCTURE_TOWER or target.structureType == STRUCTURE_SPAWN or target.structureType == STRUCTURE_EXTENSION:
                 result = creep.transfer(target, RESOURCE_ENERGY)
@@ -113,6 +119,7 @@ def run_builder(creep):
                     del creep.memory.target
                 elif result != ERR_NOT_IN_RANGE:
                     print("[{}] Unknown result from creep.transfer({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
+                    del creep.memory.target
             
             #put everything in storage, not just RESOURCE_ENERGY
             elif target.structureType == STRUCTURE_STORAGE:
@@ -122,6 +129,7 @@ def run_builder(creep):
                     del creep.memory.target
                 elif result != ERR_NOT_IN_RANGE:
                     print("[{}] Unknown result from transfer to storage: ({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
+                    del creep.memory.target
 
             elif target.structureType == STRUCTURE_CONTROLLER:
                 result = creep.upgradeController(target)
@@ -130,6 +138,7 @@ def run_builder(creep):
                     del creep.memory.target
                 elif result != ERR_NOT_IN_RANGE and result != OK:
                     print("[{}] Unknown result from creep.upgradeController({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
+                    del creep.memory.target
             else:
                 #in this case, the target was likely completed as this creep was on the way
                 del creep.memory.target
