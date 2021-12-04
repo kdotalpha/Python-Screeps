@@ -106,14 +106,22 @@ def run_builder(creep):
                 elif result != OK and result != ERR_NOT_IN_RANGE:
                     print("[{}] Unknown result from creep.build({}): {}".format(creep.name, target, result))
 
-            elif target.structureType == STRUCTURE_TOWER or target.structureType == STRUCTURE_SPAWN or target.structureType == STRUCTURE_EXTENSION \
-                or target.structureType == STRUCTURE_STORAGE:
+            elif target.structureType == STRUCTURE_TOWER or target.structureType == STRUCTURE_SPAWN or target.structureType == STRUCTURE_EXTENSION:
                 result = creep.transfer(target, RESOURCE_ENERGY)
                 if result == OK or result == ERR_FULL:
                     #done transfering
                     del creep.memory.target
                 elif result != ERR_NOT_IN_RANGE:
                     print("[{}] Unknown result from creep.transfer({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
+            
+            #put everything in storage, not just RESOURCE_ENERGY
+            elif target.structureType == STRUCTURE_STORAGE:
+                result = creep.transfer(target, _.findKey(creep.store))
+                if result == OK or result == ERR_FULL:
+                    #done transfering
+                    del creep.memory.target
+                elif result != ERR_NOT_IN_RANGE:
+                    print("[{}] Unknown result from transfer to storage: ({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
 
             elif target.structureType == STRUCTURE_CONTROLLER:
                 result = creep.upgradeController(target)

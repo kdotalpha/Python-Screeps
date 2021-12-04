@@ -143,6 +143,9 @@ def run_harvester(creep, num_creeps):
                 target = Game.getObjectById(creep.memory.closeLink.id)
                 if globals.DEBUG_LINKS:
                     print("Using closeLink: " + target)
+            #if the creep is holding a resource that is not RESOURCE_ENERGY, go put that in storage
+            if creep.store.getFreeCapacity(RESOURCES_ALL) != creep.store.getFreeCapacity(RESOURCE_ENERGY):
+                target = globals.getEnergyStorageStructure(creep, True, False, True)
             #if there is less than the max number of creeps, put the energy in a spawn/extension that isn't at max energy. Otherwise, pick a random target
             elif num_creeps < max_creeps:
                 target = globals.getEnergyStorageStructure(creep)
@@ -168,14 +171,18 @@ def run_harvester(creep, num_creeps):
 
         if is_close:
             # If we are targeting a spawn or extension, transfer energy. Otherwise, use upgradeController on it.
-            if target.store:
+            if target.structureType == STRUCTURE_SPAWN or target.structureType == STRUCTURE_EXTENSION:
                 result = creep.transfer(target, RESOURCE_ENERGY)
                 if result == OK or result == ERR_FULL:
                     del creep.memory.target
                 else:
                     print("[{}] Unknown result from creep.transfer({}, {}): {}".format(
                         creep.name, target, RESOURCE_ENERGY, result))
-            else:
+            elif target.structureType == STRUCTURE_STORAGE:
+                result = creep.transfer(target, _.findKey(creep.store))
+                if result != OK:
+                    print("[{}] Unknown result from transfer to storage: ({}, {}): {}".format(creep.name, target, RESOURCE_ENERGY, result))
+            elif target.structureType == STRUCTURE_CONTROLLER:
                 result = creep.upgradeController(target)
                 if result != OK:
                     print("[{}] Unknown result from creep.upgradeController({}): {}".format(
