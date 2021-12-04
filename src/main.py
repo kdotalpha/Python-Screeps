@@ -7,6 +7,7 @@ import harvester
 import globals
 import builder
 import tower
+import links
 
 # These are currently required for Transcrypt in order to use the following names in JavaScript.
 # Without the 'noalias' pragma, each of the following would be translated into something like 'py_Infinity' or
@@ -35,6 +36,8 @@ def main():
     for name in Object.keys(Game.spawns):
         spawn = Game.spawns[name]
 
+        links.runLinks(spawn)
+
         if not spawn.spawning:
             # Get the number of our creeps in this room.
             num_creeps = 0
@@ -48,23 +51,22 @@ def main():
                         num_harvesters += 1
                     elif creep.memory.role == "builder":
                         num_builders += 1
-                    elif creep.memory.role == "link_miner" or creep.memory.role == "link_carry":
-                        num_linkedPairs += 1
             
-            num_creeps = num_harvesters + num_builders + (num_linkedPairs * 2)
+            num_creeps = num_harvesters + num_builders
 
-            allRoadHarvesters = spawn.room.find(FIND_MY_CREEPS, {"filter": lambda s: ((s.memory.role == "harvester" and s.allRoads == True))}).length == num_harvesters and num_harvesters != 0
-            #allRoadHarvesters = True
+            #allRoadHarvesters = spawn.room.find(FIND_MY_CREEPS, {"filter": lambda s: ((s.memory.role == "harvester" and s.allRoads == True))}).length == num_harvesters and num_harvesters != 0
+            allRoadHarvesters = True
+            spawnLink = globals.getSpawnLink(spawn)
 
             #If we have less than the total max of harvesters, create a harvester
             if ((num_harvesters < globals.MAX_HARVESTERS and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable) or num_harvesters == 0) \
                 and spawn.room.energyAvailable >= 300:
                 createHarvesterBuilder = True
-                memory = { "memory": { "role": "harvester"} }                
+                memory = { "memory": { "role": "harvester", "spawnLink": spawnLink } }                
             #otherwise, create a builder
             elif num_builders < globals.MAX_BUILDERS and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable and spawn.room.energyAvailable >= 300:
                 createHarvesterBuilder = True
-                memory = { "memory": { "role": "builder"} }
+                memory = { "memory": { "role": "builder", "spawnLink": spawnLink } }
             
             if createHarvesterBuilder:
                 if globals.DEBUG_CREEP_CREATION:
@@ -103,7 +105,6 @@ def main():
                         creepParts.append(MOVE)
                         creepParts.append(CARRY)
                         creepParts.append(WORK)                        
-
                 elif energyRemainder == 200:
                     if allRoadHarvesters:
                         creepParts.append(MOVE)

@@ -18,25 +18,18 @@ __pragma__('noalias', 'update')
 
 MAX_HARVESTERS = 3
 MAX_BUILDERS = 2
-MAX_LINKED_PAIRS = 0
 DEBUG_HARVESTERS = False
 DEBUG_CREEP_CREATION = True
 DEBUG_BUILDERS = False
 HARVESTER_ROADS = True
 DEBUG_SOURCE_SELECTION = False
 DEBUG_TOWERS = False
+DEBUG_LINKS = False
 FIX_ROADS = True
 TOWER_ENERGY_RESERVE_PERCENTAGE = 0.3
 
-def GetCreepByName(name):
-    for creep_name in Object.keys(Game.creeps):
-        if creep_name == name:
-            return Game.creeps[name]
-    return None
 
 def getSource(creep):
-    #source = _.sample(creep.room.find(FIND_SOURCES))
-    #TODO: Add dropped resources
     #If there is a dropped source, just go there
     dropped_sources = _(creep.room.find(FIND_DROPPED_RESOURCES)).first()
     if dropped_sources:
@@ -44,6 +37,16 @@ def getSource(creep):
             print("Picking up dropped resources")
         return dropped_sources
     
+    #if the creep knows the spawn link and it has available energy, gather from the spawnLink
+    if creep.memory.spawnLink:
+        spawnLink = Game.getObjectById(creep.memory.spawnLink.id)
+        if DEBUG_LINKS:
+            print("Selecting sources, creep spawn link is: " + spawnLink)
+        if spawnLink and spawnLink.store.getUsedCapacity(RESOURCE_ENERGY) > 0:
+            if DEBUG_SOURCE_SELECTION:
+                print("Gathering energy from spawn link")
+            return creep.memory.spawnLink
+
     sources = creep.room.find(FIND_SOURCES, {"filter": lambda s: ((s.energy > 0))})
     unusedSources = []
     for source in sources:
@@ -51,9 +54,8 @@ def getSource(creep):
             unusedSources.append(source)
             if DEBUG_SOURCE_SELECTION:
                 print("Unused sources: " + unusedSources + " with count " + unusedSources.length)
-    range = 99999999
-    sourceList = []
     
+    range = 99999999
     if unusedSources.length > 0:
         #If there are sources with no one around, go to those
         for s in unusedSources:
@@ -67,11 +69,25 @@ def getSource(creep):
             print("Selected closest target is " + target)
         return target
     else:
-        #otherwise go to a random source
+        #otherwise go to a source that doesn't have a link and a creep
         if DEBUG_SOURCE_SELECTION:
-            print("Both sources taken, picking random source")
-        return sources[_.random(0, sources.length - 1)]
+            print("Both sources taken, picking random non-link source")
+        waitSources = []
+        for source in sources:
+            #If the source has a creep and a link nearby, don't go there
+            if not (source.pos.findInRange(FIND_MY_CREEPS, 1).length > 0 and \
+                source.pos.findInRange(FIND_MY_STRUCTURES, 2, { "filter": lambda s: (s.structureType == STRUCTURE_LINK)}).length > 0):
+                waitSources.append(source)
+        return waitSources[_.random(0, waitSources.length - 1)]
 
+def getSpawnLink(spawn):
+    link = spawn.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": lambda s: ((s.structureType == STRUCTURE_LINK))})
+    #if DEBUG_LINKS:
+    #    print("Spawn link is " + link)
+    return link
+
+
+#TODO: Refactor this into broken structure
 def getBrokenRoad(creep, closest = True, hitsMinPercentage = 1):
     """
     Gets a road in the same room as a creep with hits less than hitsMin
@@ -101,31 +117,17 @@ def getBrokenStructure(creep, closest = True, hitsMinPercentage=1):
         return creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": lambda s: ((s.hits < (s.hitsMax * hitsMinPercentage))) })
 
 def getTower(creep, maxEnergyPercentage = 0.8):
+    """
+    Gets the closest tower in the same room as a creep
+    :param creep: The creep to run
+    :param maxEnergyPercentage: The max energy percentage of total that the tower is allowed to have, between 0 and 1. 0 means only totally empty towers, 1 means only full towers
+    """
     tower = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { "filter": \
-        lambda s: ((s.structureType == STRUCTURE_TOWER and s.store.getUsedCapacity(RESOURCE_ENERGY) <= s.store.getCapacity(RESOURCE_ENERGY) * maxEnergyPercentage)) })
+        lambda s: ((s.structureType == STRUCTURE_TOWER and s.store.getUsedCapacity(RESOURCE_ENERGY) < s.store.getCapacity(RESOURCE_ENERGY) * maxEnergyPercentage)) })
     if not tower:
         tower = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": \
-            lambda s: ((s.structureType == STRUCTURE_TOWER and s.store.getUsedCapacity(RESOURCE_ENERGY) <= s.store.getCapacity(RESOURCE_ENERGY) * maxEnergyPercentage)) })
+            lambda s: ((s.structureType == STRUCTURE_TOWER and s.store.getUsedCapacity(RESOURCE_ENERGY) < s.store.getCapacity(RESOURCE_ENERGY) * maxEnergyPercentage)) })
     return tower
-
-
-def getTowers(creep, closest = True, onlyEmpty = False):
-    """
-    Gets a tower in the same room as a creep
-    :param creep: The creep to run
-    :param closest: Whether to find the closest tower
-    :param onlyEmpty: If set to true, only return towers that are completely empty on power. Always returns closest
-    """
-    if onlyEmpty:
-        return creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": lambda s: ((s.structureType == STRUCTURE_TOWER and s.store.getUsedCapacity(RESOURCE_ENERGY) == 0)) })
-
-    if not closest:
-        return _(creep.room.find(FIND_MY_STRUCTURES)) \
-                    .filter(lambda s: ((s.structureType == STRUCTURE_TOWER) and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) \
-                    .first()
-    else:
-        return creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": lambda s: ((s.structureType == STRUCTURE_TOWER and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) })
-
 
 def getEnergyStorageStructure(creep, closest = True, controller = False, storage = False):
     """

@@ -27,8 +27,8 @@ def fillCreep(creep, customSource = False):
 
     if creep.pos.isNearTo(source):
         # If we're near the source, harvest it - otherwise, move to it.
-        if source.structureType == STRUCTURE_STORAGE:
-            creep.say("🔄 storage")
+        if source.structureType == STRUCTURE_STORAGE or source.structureType == STRUCTURE_LINK:
+            creep.say("🔄 withdraw")
             result = creep.withdraw(source, RESOURCE_ENERGY)
         elif source.energyCapacity == undefined:
             creep.say("🔄 pickup")
@@ -36,7 +36,7 @@ def fillCreep(creep, customSource = False):
         else: 
             result = creep.harvest(source)
         if result == ERR_NOT_ENOUGH_RESOURCES:
-            #we've mined this out, continue filling but delete this source
+            #we've mined this out, stop filling and delete this source
             creep.say("🔄 OOE")
             del creep.memory.source
             creep.memory.filling = False
@@ -62,6 +62,8 @@ def fillCreep(creep, customSource = False):
 
         #If I'm not waiting, or the source is a dropped resource, move closer
         if not waiting or source.energyCapacity == undefined:
+            if source == creep.memory.spawnLink:
+                source = Game.getObjectById(source)
             creep.moveTo(source, {"visualizePathStyle": { "stroke": "#ffffff" } })
             del creep.memory.waiting
         
@@ -82,7 +84,6 @@ def run_harvester(creep, num_creeps):
         creep.memory.allRoads = True
     #if it has always been on all roads, check to see for every step if it is still walking on roads
     #if it ever steps on something that is not a road, it will remain false for its lifetime
-
     if creep.memory.allRoads:
         terrain = creep.room.lookAt(creep)
         foundRoad = False
@@ -96,6 +97,19 @@ def run_harvester(creep, num_creeps):
     # If we're full, stop filling up and remove the saved source
     if creep.memory.filling and creep.store.getFreeCapacity() == 0:
         creep.memory.filling = False
+        #Harvesters should stick to sources that are next to a link structure, and not move any longer
+        closeLink = creep.pos.findInRange(FIND_MY_STRUCTURES, 1, { "filter": lambda s: (s.structureType == STRUCTURE_LINK)})
+
+        if closeLink.length > 0 and closeLink[0].id != creep.memory.spawnLink.id:
+            if globals.DEBUG_LINKS:
+                print(creep + " has new sticky source: " + creep.memory.source + " for link " + closeLink[0])
+            creep.memory.stickySource = creep.memory.source
+            creep.memory.closeLink = closeLink[0]
+            creep.say("🔄 sticking")
+        else:
+            if globals.DEBUG_LINKS:
+                print(creep + " has no link nearby, unsticking")
+            del creep.memory.stickySource
         del creep.memory.source
         if globals.DEBUG_HARVESTERS:
             print(creep.name + " has no more capacity and is done filling.")
@@ -110,7 +124,10 @@ def run_harvester(creep, num_creeps):
         
     # calling into creep.memory.X is a boolean, unless you use Game.getObjectById to get the value
     if creep.memory.filling:
-        fillCreep(creep)
+        if creep.memory.stickySource:
+            fillCreep(creep, Game.getObjectById(creep.memory.stickySource))
+        else:
+            fillCreep(creep)
         if globals.HARVESTER_ROADS:
             try:
                 creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD)
@@ -119,10 +136,15 @@ def run_harvester(creep, num_creeps):
     else:
         # If we have a saved target, use it
         if creep.memory.target:
-            target = Game.getObjectById(creep.memory.target)
+            target = creep.memory.target
         else:
+            #if we have a sticky source, we must be next to a link, use that
+            if creep.memory.stickySource:
+                target = Game.getObjectById(creep.memory.closeLink.id)
+                if globals.DEBUG_LINKS:
+                    print("Using closeLink: " + target)
             #if there is less than the max number of creeps, put the energy in a spawn/extension that isn't at max energy. Otherwise, pick a random target
-            if num_creeps < max_creeps:
+            elif num_creeps < max_creeps:
                 target = globals.getEnergyStorageStructure(creep)
             else: 
                 # Get a random new target.
@@ -132,12 +154,14 @@ def run_harvester(creep, num_creeps):
             creep.say("🚧 " + target.structureType)
             if globals.DEBUG_HARVESTERS:
                 print(creep.name + " has a new target: " + target.structureType)
-
+        
         # If we are targeting a spawn or extension, we need to be directly next to it - otherwise, we can be 3 away.
         # Controllers do not have an energy store, so it returns undefined and thus fails out
+
+        target = Game.getObjectById(creep.memory.target)
         if not target:
             del creep.memory.target
-        if target.store:
+        elif target.store:
             is_close = creep.pos.isNearTo(target)
         else:
             is_close = creep.pos.inRangeTo(target, 3)
@@ -164,7 +188,7 @@ def run_harvester(creep, num_creeps):
                             creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD)
                         except:
                             pass
-        else:
+        elif target:
             creep.moveTo(target, {"visualizePathStyle": { "stroke": "#ffffff" } })
             if globals.HARVESTER_ROADS:
                 try:
