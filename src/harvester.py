@@ -98,7 +98,6 @@ def run_harvester(creep, num_creeps):
         creep.memory.filling = False
         #Harvesters should stick to sources that are next to a link structure, and not move any longer
         closeLink = creep.pos.findInRange(FIND_MY_STRUCTURES, 1, { "filter": lambda s: (s.structureType == STRUCTURE_LINK)})
-
         if closeLink.length > 0 and closeLink[0].id != creep.memory.spawnLink.id:
             if globals.DEBUG_LINKS:
                 print(creep + " has new sticky source: " + creep.memory.source + " for link " + closeLink[0])
@@ -145,8 +144,7 @@ def run_harvester(creep, num_creeps):
                 if globals.DEBUG_LINKS:
                     print("Using closeLink: " + target)
             #if the creep is holding a resource that is not RESOURCE_ENERGY, go put that in storage
-
-            if _.find(creep.store) != creep.store.getUsedCapacity(RESOURCE_ENERGY):
+            elif _.find(creep.store) != creep.store.getUsedCapacity(RESOURCE_ENERGY):
                 target = globals.getEnergyStorageStructure(creep, True, False, True)
             #if there is less than the max number of creeps, put the energy in a spawn/extension that isn't at max energy. Otherwise, pick a random target
             elif num_creeps < max_creeps:
@@ -173,7 +171,7 @@ def run_harvester(creep, num_creeps):
 
         if is_close:
             # If we are targeting a spawn or extension, transfer energy. Otherwise, use upgradeController on it.
-            if target.structureType == STRUCTURE_SPAWN or target.structureType == STRUCTURE_EXTENSION:
+            if target.structureType == STRUCTURE_SPAWN or target.structureType == STRUCTURE_EXTENSION or target.structureType == STRUCTURE_LINK:
                 result = creep.transfer(target, RESOURCE_ENERGY)
                 if result == OK or result == ERR_FULL:
                     del creep.memory.target
