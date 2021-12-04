@@ -44,8 +44,8 @@ def fillCreep(creep, customSource = False):
             print("[{}] Unknown result from creep.harvest({}): {}".format(creep.name, source, result))
             del creep.memory.source
     else:
-        #wait if the source is currently being used by someone else, so as not to crowd them in
-        waiting = (creep.pos.getRangeTo(source) == 2 and source.pos.findInRange(FIND_MY_CREEPS, 1) != 0)
+        #wait if the source is currently being used by someone else, so as not to crowd them in, but only do this if it is a real source
+        waiting = (creep.pos.getRangeTo(source) == 2 and source.pos.findInRange(FIND_MY_CREEPS, 1) != 0 and source.ticksToRegeneration)
         #store how long they have been waiting for later debug purposes
         if waiting:
             if creep.memory.waiting:
@@ -53,7 +53,7 @@ def fillCreep(creep, customSource = False):
             else:
                 creep.memory.waiting = 1
             waiting_creeps = source.pos.findInRange(FIND_MY_CREEPS, 2, {"filter": lambda s: (s.memory.waiting > 1)})
-            if waiting_creeps.length > 1:
+            if waiting_creeps.length > 1 or creep.memory.waiting >= 100:
                 #too many creeps waiting, 50/50 find a new source
                 if _.random(0,1) == 0:
                     creep.say("🔄 wait")
@@ -66,7 +66,6 @@ def fillCreep(creep, customSource = False):
                 source = Game.getObjectById(source)
             creep.moveTo(source, {"visualizePathStyle": { "stroke": "#ffffff" } })
             del creep.memory.waiting
-        
 
 
 def run_harvester(creep, num_creeps):
@@ -94,7 +93,7 @@ def run_harvester(creep, num_creeps):
         if foundRoad == False:
             creep.say("No road")
 
-    # If we're full, stop filling up and remove the saved source
+    # If we're full, stop filling up and remove the saved source and any saved targets
     if creep.memory.filling and creep.store.getFreeCapacity() == 0:
         creep.memory.filling = False
         #Harvesters should stick to sources that are next to a link structure, and not move any longer
@@ -111,6 +110,7 @@ def run_harvester(creep, num_creeps):
                 print(creep + " has no link nearby, unsticking")
             del creep.memory.stickySource
         del creep.memory.source
+        del creep.memory.target
         if globals.DEBUG_HARVESTERS:
             print(creep.name + " has no more capacity and is done filling.")
 

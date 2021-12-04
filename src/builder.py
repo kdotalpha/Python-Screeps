@@ -18,12 +18,13 @@ def run_builder(creep):
     :param creep: The creep to run
     """
     
-    # If we're full, stop filling up and remove the saved source
+    # If we're full, stop filling up and remove the saved source as well as any saved targets
     if creep.memory.filling and creep.store.getFreeCapacity() == 0:
         if globals.DEBUG_BUILDERS:
             print(creep.name + " has no more capacity and is done filling.")
         creep.memory.filling = False
         del creep.memory.source
+        del creep.memory.target
 
     # If we're empty, start filling again and remove the saved target
     elif not creep.memory.filling and creep.store.getUsedCapacity() == 0:

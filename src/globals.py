@@ -78,6 +78,9 @@ def getSource(creep):
             if not (source.pos.findInRange(FIND_MY_CREEPS, 1).length > 0 and \
                 source.pos.findInRange(FIND_MY_STRUCTURES, 2, { "filter": lambda s: (s.structureType == STRUCTURE_LINK)}).length > 0):
                 waitSources.append(source)
+        #if there is truly nothing else to gather, then gather from storage
+        if waitSources.length == 0:
+            return creep.room.storage
         return waitSources[_.random(0, waitSources.length - 1)]
 
 def getSpawnLink(spawn):
