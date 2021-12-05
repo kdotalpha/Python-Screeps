@@ -76,7 +76,7 @@ def run_harvester(creep, num_creeps):
     #increase max_creeps as we build new types of creeps
     #TODO: this currently has a bug where if I'm in multiple rooms, I'm only looking at the max values instead of the values per room when
     #deciding whether or not to build more creeps
-    max_creeps = globals.MAX_HARVESTERS + globals.MAX_BUILDERS + globals.MAX_LINKED_PAIRS
+    max_creeps = globals.MAX_HARVESTERS + globals.MAX_BUILDERS
     
     #If this is the first time we've seen this creep, track it as having always been on all roads
     if creep.memory.allRoads == undefined:
@@ -143,14 +143,22 @@ def run_harvester(creep, num_creeps):
                 target = Game.getObjectById(creep.memory.closeLink.id)
                 if globals.DEBUG_LINKS:
                     print("Using closeLink: " + target)
+                if globals.DEBUG_HARVESTERS:
+                    print("Sending to link")
             #if the creep is holding a resource that is not RESOURCE_ENERGY, go put that in storage
-            elif _.find(creep.store) != creep.store.getUsedCapacity(RESOURCE_ENERGY):
+            elif _.find(creep.store) != undefined and _.find(creep.store) != creep.store.getUsedCapacity(RESOURCE_ENERGY):
                 target = globals.getEnergyStorageStructure(creep, True, False, True)
+                if globals.DEBUG_HARVESTERS:
+                    print("Depositing rare materials")
             #if there is less than the max number of creeps, put the energy in a spawn/extension that isn't at max energy. Otherwise, pick a random target
             elif num_creeps < max_creeps:
+                if globals.DEBUG_HARVESTERS:
+                    print("Less than max # of creeps, prioritizng extensions")
                 target = globals.getEnergyStorageStructure(creep)
             else: 
                 # Get a random new target.
+                if globals.DEBUG_HARVESTERS:
+                    print("Picking random target")
                 target = globals.getEnergyStorageStructure(creep, False, True)
 
             creep.memory.target = target.id

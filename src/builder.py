@@ -33,6 +33,7 @@ def run_builder(creep):
         creep.say("🔄 harvest")
         creep.memory.filling = True
         del creep.memory.target
+        del creep.memory.source
     
     #get the builder target
     # If we have a saved target, use it
@@ -41,9 +42,13 @@ def run_builder(creep):
         if target == None:
             del creep.memory.target
     if not creep.memory.target:
+        if globals.DEBUG_BUILDERS:
+            print("Selecting targets")
         #if I'm holding exotic materials, go deliver those
-        if _.find(creep.store) != creep.store.getUsedCapacity(RESOURCE_ENERGY):
+        if _.find(creep.store) != undefined and _.find(creep.store) != creep.store.getUsedCapacity(RESOURCE_ENERGY):
             target = globals.getEnergyStorageStructure(creep, True, False, True)
+            if globals.DEBUG_BUILDERS and target:
+                print(creep.name + " is holding exotic materials, go dump those: " + target.structureType)
 
         #highest priority is giving some energy to towers that are completely empty, command action is TRANSFER
         if not target:
@@ -84,7 +89,7 @@ def run_builder(creep):
                 print(creep.name + " transfering energy: " + target.structureType)
         
         if globals.DEBUG_BUILDERS:
-            print("Build target is " + target)
+            print("Builder target is " + target)
         #set the memory target
         creep.memory.target = target.id
 
@@ -93,6 +98,8 @@ def run_builder(creep):
     if creep.memory.filling:
         if target and target.progress != undefined and target.structureType != STRUCTURE_CONTROLLER \
              and creep.room.storage and creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 0:
+            if globals.DEBUG_BUILDERS:
+                print("Filling from storage since we have things to build")
             #we are building, so get the energy from storage if it exists
             harvester.fillCreep(creep, creep.room.storage)
         else:
@@ -141,6 +148,8 @@ def run_builder(creep):
                     del creep.memory.target
             else:
                 #in this case, the target was likely completed as this creep was on the way
+                if globals.DEBUG_BUILDERS:
+                    print("Deleting target since it was not here to build")
                 del creep.memory.target
 
             #keep getting closer
