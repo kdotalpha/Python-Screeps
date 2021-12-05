@@ -36,9 +36,16 @@ def run_tower(tower):
     #TODO: Create a full structure priority list
     if not target and tower.store.getUsedCapacity(RESOURCE_ENERGY) > globals.TOWER_ENERGY_RESERVE_PERCENTAGE * tower.store.getCapacity(RESOURCE_ENERGY):
         if globals.FIX_ROADS:
-            target = globals.getBrokenRoad(tower)        
+            target = globals.getBrokenStructure(tower, True, 1, STRUCTURE_ROAD)
+            print("1" + target)
         if not target:
-            target = globals.getBrokenStructure(tower)
+            #heal ramparts to 50%
+            target = globals.getBrokenStructure(tower, True, 0.5, STRUCTURE_RAMPART)
+            print("2" + target)
+        if not target:
+            #heal everything else
+            target = globals.getBrokenStructure(tower, True, 1, None, STRUCTURE_RAMPART)
+            print("3" + target)
         if target:
             if globals.DEBUG_TOWERS:
                 print("Tower repair target is " + target.structureType)

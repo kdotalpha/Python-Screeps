@@ -23,7 +23,7 @@ DEBUG_CREEP_CREATION = True
 DEBUG_BUILDERS = False
 HARVESTER_ROADS = True
 DEBUG_SOURCE_SELECTION = False
-DEBUG_TOWERS = False
+DEBUG_TOWERS = True
 DEBUG_LINKS = False
 FIX_ROADS = True
 TOWER_ENERGY_RESERVE_PERCENTAGE = 0.3
@@ -91,35 +91,43 @@ def getSpawnLink(spawn):
     #    print("Spawn link is " + link)
     return link
 
-
-#TODO: Refactor this into broken structure
-def getBrokenRoad(creep, closest = True, hitsMinPercentage = 1):
+def getBrokenStructure(creep, closest=True, hitsMinPercentage=1, structureType = None, avoidStructureType = None):
     """
-    Gets a road in the same room as a creep with hits less than hitsMin
+    Gets a structure in the same room as a creep with hits less than hitsMinPercentage of max hits
     :param creep: The creep to run
     :param closest: Whether to find the closest road
     :param hitsMinPercentage: The percentage to repair the road up to, between 0 and 1
+    :param structureType: The the specific structureType to look for. If None, look for anything
+    :param avoidStructureType: Look for any structures besides the one specified. If provided, ignores structureType
     """
-    if not closest:
-        return _(creep.room.find(FIND_STRUCTURES)) \
-                    .filter(lambda s: (s.structureType == STRUCTURE_ROAD and s.hits < (s.hitsMax * hitsMinPercentage))) \
-                    .first()
-    else:
-        return creep.pos.findClosestByRange(FIND_STRUCTURES, { "filter": lambda s: ((s.structureType == STRUCTURE_ROAD and (s.hits < (s.hitsMax * hitsMinPercentage)))) })        
-
-def getBrokenStructure(creep, closest = True, hitsMinPercentage=1):
-    """
-    Gets a road in the same room as a creep with hits less than hitsMin
-    :param creep: The creep to run
-    :param closest: Whether to find the closest road
-    :param hitsMinPercentage: The percentage to repair the road up to, between 0 and 1
-    """
-    if not closest:
-        return _(creep.room.find(FIND_MY_STRUCTURES)) \
-                    .filter(lambda s: (s.hits < (s.hitsMax * hitsMinPercentage))) \
-                    .first()
-    else:
-        return creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": lambda s: ((s.hits < (s.hitsMax * hitsMinPercentage))) })
+    if structureType == None and avoidStructureType == None:
+        if DEBUG_TOWERS:
+            print("Getting first broken structure")
+        if not closest:
+            return _(creep.room.find(FIND_MY_STRUCTURES)) \
+                        .filter(lambda s: (s.hits < (s.hitsMax * hitsMinPercentage))) \
+                        .first()
+        else:
+            return creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": lambda s: ((s.hits < (s.hitsMax * hitsMinPercentage))) })
+    if avoidStructureType != None:
+        if DEBUG_TOWERS:
+            print("Avoiding structure type: " + avoidStructureType)
+        if not closest:
+            return _(creep.room.find(FIND_MY_STRUCTURES)) \
+                        .filter(lambda s: ((s.hits < (s.hitsMax * hitsMinPercentage) and s.structureType != avoidStructureType))) \
+                        .first()
+        else:
+            return creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": lambda s: ((s.hits < (s.hitsMax * hitsMinPercentage) and s.structureType != avoidStructureType)) })
+    if structureType != None:
+        if DEBUG_TOWERS:
+            print("Finding first broken structure of type: " + structureType)
+        if not closest:
+            return _(creep.room.find(FIND_MY_STRUCTURES)) \
+                        .filter(lambda s: ((s.hits < (s.hitsMax * hitsMinPercentage) and s.structureType == structureType))) \
+                        .first()
+    if DEBUG_TOWERS:
+        print("Finding closest broken structure")
+    return creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": lambda s: ((s.hits < (s.hitsMax * hitsMinPercentage) and s.structureType == structureType)) })
 
 def getTower(creep, maxEnergyPercentage = 0.8):
     """
