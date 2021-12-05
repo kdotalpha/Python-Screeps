@@ -53,7 +53,7 @@ def fillCreep(creep, customSource = False):
             else:
                 creep.memory.waiting = 1
             waiting_creeps = source.pos.findInRange(FIND_MY_CREEPS, 2, {"filter": lambda s: (s.memory.waiting > 1)})
-            if waiting_creeps.length > 1 or creep.memory.waiting >= 100:
+            if waiting_creeps.length > 1 or creep.memory.waiting >= globals.MAX_CREEP_WAIT:
                 #too many creeps waiting, 50/50 find a new source
                 if _.random(0,1) == 0:
                     creep.say("🔄 wait")
