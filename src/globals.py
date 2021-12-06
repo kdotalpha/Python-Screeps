@@ -40,6 +40,13 @@ def getSource(creep):
             print("Picking up dropped resources")
         return dropped_sources
     
+    #then go to tombstones
+    tombstone = _(creep.room.find(FIND_TOMBSTONES)).first()
+    if tombstone and _.find(tombstone.store):
+        if DEBUG_SOURCE_SELECTION:
+            print("Picking up from tombstone")
+        return tombstone
+    
     #if the creep knows the spawn link and it has available energy, gather from the spawnLink
     if creep.memory.spawnLink:
         spawnLink = Game.getObjectById(creep.memory.spawnLink.id)

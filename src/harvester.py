@@ -30,7 +30,15 @@ def fillCreep(creep, customSource = False):
         if source.structureType == STRUCTURE_STORAGE or source.structureType == STRUCTURE_LINK:
             creep.say("🔄 withdraw")
             result = creep.withdraw(source, RESOURCE_ENERGY)
-        elif source.energyCapacity == undefined:
+        #this is a tombstone
+        elif source.deathTime != undefined and _.find(source.store) != undefined:
+            creep.say("🔄 tombstone")
+            result = creep.withdraw(source, _.findKey(source.store))
+        elif source.structureType == STRUCTURE_EXTRACTOR:
+            creep.say("🔄 minerals")
+            result = creep.harvest(source)
+        #this is a dropped resource
+        elif source.resourceType != undefined:
             creep.say("🔄 pickup")
             result = creep.pickup(source)
         else: 
