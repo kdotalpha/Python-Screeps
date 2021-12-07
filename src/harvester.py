@@ -49,8 +49,12 @@ def fillCreep(creep, customSource = False):
             del creep.memory.source
             creep.memory.filling = False
         elif result != OK:
-            print("[{}] Unknown result from creep.harvest({}): {}".format(creep.name, source, result))
-            del creep.memory.source
+            #stick around if it is a mineral in cooldown
+            if result == ERR_TIRED and source.mineralAmount != undefined:
+                pass
+            else:
+                print("[{}] Unknown result from creep.harvest({}): {}".format(creep.name, source, result))
+                del creep.memory.source
     else:
         #wait if the source is currently being used by someone else, so as not to crowd them in, but only do this if it is a real source
         waiting = (creep.pos.getRangeTo(source) == 2 and source.pos.findInRange(FIND_MY_CREEPS, 1) != 0 and source.ticksToRegeneration)

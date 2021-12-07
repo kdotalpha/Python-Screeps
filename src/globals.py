@@ -22,7 +22,7 @@ DEBUG_HARVESTERS = False
 DEBUG_CREEP_CREATION = True
 DEBUG_BUILDERS = False
 HARVESTER_ROADS = True
-DEBUG_SOURCE_SELECTION = False
+DEBUG_SOURCE_SELECTION = True
 DEBUG_TOWERS = False
 DEBUG_LINKS = False
 FIX_ROADS = True
@@ -90,14 +90,33 @@ def getSource(creep):
                 waitSources.append(source)
         #if there is truly nothing else to gather, check for minerals to extract
         if waitSources.length == 0:
-            
+            if DEBUG_SOURCE_SELECTION:
+                print("checking for minerals")
+            minerals = getExtractableMinerals(creep.room)
+            if DEBUG_SOURCE_SELECTION:
+                print("minerals: " + minerals)
+            if minerals:
+                return minerals
             #if there are no minerals to extract, return storage
             return creep.room.storage
                 
         return waitSources[_.random(0, waitSources.length - 1)]
 
 def getExtractableMinerals(room):
-    pass
+    #check to see if there is a mineral in the room
+    #if yes, check if there is an extractor at the same position
+    #if so, return it. If not, return None The game mandates there is only ever 1 type of mineral in a room
+
+    mineral = _(room.find(FIND_MINERALS, { "filter": lambda s: ((s.mineralAmount > 0))})).first()
+    if DEBUG_SOURCE_SELECTION:
+        print(mineral.pos)
+    if mineral.pos:
+        extractor = _(room.find(FIND_MY_STRUCTURES, {"filter": lambda s: ((s.structureType == STRUCTURE_EXTRACTOR and s.pos.x == mineral.pos.x and s.pos.y == mineral.pos.y))})).first()
+        print(extractor)
+    if extractor:
+        return mineral
+    return None
+    
 
 def getSpawnLink(spawn):
     link = spawn.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": lambda s: ((s.structureType == STRUCTURE_LINK))})
