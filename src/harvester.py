@@ -56,8 +56,8 @@ def fillCreep(creep, customSource = False):
                 print("[{}] Unknown result from creep.harvest({}): {}".format(creep.name, source, result))
                 del creep.memory.source
     else:
-        #wait if the source is currently being used by someone else, so as not to crowd them in, but only do this if it is a real source
-        waiting = (creep.pos.getRangeTo(source) == 2 and source.pos.findInRange(FIND_MY_CREEPS, 1) != 0 and source.ticksToRegeneration)
+        #wait if the source is currently being used by someone else, so as not to crowd them in, but only do this if it is a real source or a mineral
+        waiting = (creep.pos.getRangeTo(source) == 2 and source.pos.findInRange(FIND_MY_CREEPS, 1) != 0 and (source.ticksToRegeneration or source.mineralType))
         #store how long they have been waiting for later debug purposes
         if waiting:
             if creep.memory.waiting:
@@ -72,8 +72,8 @@ def fillCreep(creep, customSource = False):
                     del creep.memory.source
                     del creep.memory.waiting
 
-        #If I'm not waiting, or the source is a dropped resource, move closer
-        if not waiting or source.energyCapacity == undefined:
+        #If I'm not waiting, or the source is a dropped resource and not a mineral, move closer
+        if not waiting or (source.energyCapacity == undefined and source.mineralType == undefined):
             if source == creep.memory.spawnLink:
                 source = Game.getObjectById(source)
             creep.moveTo(source, {"visualizePathStyle": { "stroke": "#ffffff" } })
