@@ -26,6 +26,7 @@ DEBUG_SOURCE_SELECTION = True
 DEBUG_TOWERS = False
 DEBUG_LINKS = False
 FIX_ROADS = True
+FIX_WALLS = True
 TOWER_ENERGY_RESERVE_PERCENTAGE = 0.3
 HARVESTER_BUILDER_MAX_POWER = 1800
 HARVESTER_BUILDER_MIN_POWER = 300
@@ -167,7 +168,7 @@ def getBrokenStructure(creep, closest=True, hitsMinPercentage=1, myStructures = 
         print("Finding closest broken structure")
     return creep.pos.findClosestByRange(FIND_CONSTANT, { "filter": lambda s: ((s.hits < (s.hitsMax * hitsMinPercentage) and s.structureType == structureType)) })
 
-def getTower(creep, maxEnergyPercentage = 0.8):
+def getTower(creep, maxEnergyPercentage = 0.6):
     """
     Gets the closest tower in the same room as a creep
     :param creep: The creep to run
