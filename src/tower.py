@@ -39,10 +39,10 @@ def run_tower(tower):
             target = globals.getBrokenStructure(tower, True, 1, False, None, STRUCTURE_ROAD)
         if not target:
             #heal ramparts
-            target = globals.getBrokenStructure(tower, True, 0.8, True, None, STRUCTURE_RAMPART)
+            target = globals.getBrokenStructure(tower, True, 0.05, True, None, STRUCTURE_RAMPART)
         if not target and globals.FIX_WALLS:
             #heal walls to 5%
-            target = globals.getBrokenStructure(tower, True, 0.05, False, None, STRUCTURE_WALL)
+            target = globals.getBrokenStructure(tower, True, 0.001, False, None, STRUCTURE_WALL)
         if not target:
             #heal everything else
             target = globals.getBrokenStructure(tower, True, 1, True, STRUCTURE_RAMPART)

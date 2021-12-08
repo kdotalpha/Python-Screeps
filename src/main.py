@@ -37,22 +37,19 @@ def main():
         spawn = Game.spawns[name]
 
         links.runLinks(spawn)
-
+        # Get the number of our creeps in this room.
+        #TODO: Factor this out
+        num_harvesters = 0
+        num_builders = 0
+        for name in Object.keys(Game.creeps):
+            creep = Game.creeps[name]
+            if creep.pos.roomName == spawn.pos.roomName:
+                if creep.memory.role == "harvester":
+                    num_harvesters += 1
+                elif creep.memory.role == "builder":
+                    num_builders += 1
+    
         if not spawn.spawning:
-            # Get the number of our creeps in this room.
-            num_creeps = 0
-            num_harvesters = 0
-            num_builders = 0
-            num_linkedPairs = 0
-            for name in Object.keys(Game.creeps):
-                creep = Game.creeps[name]
-                if creep.pos.roomName == spawn.pos.roomName:
-                    if creep.memory.role == "harvester":
-                        num_harvesters += 1
-                    elif creep.memory.role == "builder":
-                        num_builders += 1
-            
-            num_creeps = num_harvesters + num_builders
 
             #allRoadHarvesters = spawn.room.find(FIND_MY_CREEPS, {"filter": lambda s: ((s.memory.role == "harvester" and s.allRoads == True))}).length == num_harvesters and num_harvesters != 0
             allRoadHarvesters = True
@@ -142,15 +139,15 @@ def main():
                     print("Creating a new creep named " + creep_name + " with energy " + energy + " with role: " + memory.memory.role + " with parts: " + creepParts)
 
         
-    # Run creeps
+    # Run creeps in all rooms
     for name in Object.keys(Game.creeps):
         creep = Game.creeps[name]
         if creep.memory.role == "harvester":
-            harvester.run_harvester(creep, num_creeps)
+            harvester.run_harvester(creep)
         elif creep.memory.role == "builder":
             builder.run_builder(creep)
 
-    # Run Towers
+    # Run Towers in all rooms
     for struct in Object.keys(Game.structures):
         s = Game.structures[struct]
         if s.structureType == STRUCTURE_TOWER:

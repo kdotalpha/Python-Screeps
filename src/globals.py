@@ -16,19 +16,28 @@ __pragma__('noalias', 'type')
 __pragma__('noalias', 'update')
 
 
+#do builders use storage energy when refilling towers
+BUILDER_TOWER_ENERGY = False
+#do harvesters tell builders where to put roads in a room
+HARVESTER_ROADS = False
+#do towers fix roads
+FIX_ROADS = True
+#do towers fix walls
+FIX_WALLS = False
+#do harvesters/builders mine minerals
+MINE_MINERALS = False
+
 MAX_HARVESTERS = 3
 MAX_BUILDERS = 2
-DEBUG_HARVESTERS = False
+
+#debugs
+DEBUG_HARVESTERS = True
 DEBUG_CREEP_CREATION = True
 DEBUG_BUILDERS = False
-#this one makes builders use storage energy when refilling towers
-BUILDER_TOWER_ENERGY = False
-HARVESTER_ROADS = False
 DEBUG_SOURCE_SELECTION = True
 DEBUG_TOWERS = False
 DEBUG_LINKS = False
-FIX_ROADS = True
-FIX_WALLS = False
+
 TOWER_ENERGY_RESERVE_PERCENTAGE = 0.3
 HARVESTER_BUILDER_MAX_POWER = 1800
 HARVESTER_BUILDER_MIN_POWER = 300
@@ -44,11 +53,13 @@ def getSource(creep):
         return dropped_sources
     
     #then go to tombstones
-    tombstone = _(creep.room.find(FIND_TOMBSTONES)).first()
-    if tombstone and _.find(tombstone.store):
-        if DEBUG_SOURCE_SELECTION:
-            print("Picking up from tombstone")
-        return tombstone
+    tombstones = creep.room.find(FIND_TOMBSTONES)
+    if tombstones:
+        for tombstone in tombstones:
+            if _.find(tombstone.store):
+                if DEBUG_SOURCE_SELECTION:
+                    print("Picking up from tombstone")
+                return tombstone
     
     #if the creep knows the spawn link and it has available energy, gather from the spawnLink
     if creep.memory.spawnLink:
@@ -93,13 +104,14 @@ def getSource(creep):
                 waitSources.append(source)
         #if there is truly nothing else to gather, check for minerals to extract
         if waitSources.length == 0:
-            if DEBUG_SOURCE_SELECTION:
-                print("checking for minerals")
-            minerals = getExtractableMinerals(creep.room)
-            if DEBUG_SOURCE_SELECTION:
-                print("minerals: " + minerals)
-            if minerals:
-                return minerals
+            if MINE_MINERALS:
+                if DEBUG_SOURCE_SELECTION:
+                    print("checking for minerals")
+                minerals = getExtractableMinerals(creep.room)
+                if DEBUG_SOURCE_SELECTION:
+                    print("minerals: " + minerals)
+                if minerals:
+                    return minerals
             #if there are no minerals to extract, return storage
             return creep.room.storage
                 

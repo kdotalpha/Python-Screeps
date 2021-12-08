@@ -63,12 +63,6 @@ def run_builder(creep):
             if globals.DEBUG_BUILDERS and target:                
                 print(creep.name + " build target: " + target.structureType)
         
-        #If there is nothing to build, prioritize filling tower energy to min safe %, command action is TRANSFER
-        if not target:
-            target = globals.getTower(creep)
-            if globals.DEBUG_BUILDERS and target:
-                print(creep.name + " filling tower to 60%: " + target.structureType)  
-        
         #Then prioritize filling spawns and extensions with energy, command action is TRANSFER
         if not target:
             target = globals.getEnergyStorageStructure(creep)

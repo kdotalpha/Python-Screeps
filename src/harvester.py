@@ -80,7 +80,7 @@ def fillCreep(creep, customSource = False):
             del creep.memory.waiting
 
 
-def run_harvester(creep, num_creeps):
+def run_harvester(creep):
     """
     Runs a creep as a generic harvester.
     :param creep: The creep to run
@@ -89,6 +89,21 @@ def run_harvester(creep, num_creeps):
     #TODO: this currently has a bug where if I'm in multiple rooms, I'm only looking at the max values instead of the values per room when
     #deciding whether or not to build more creeps
     max_creeps = globals.MAX_HARVESTERS + globals.MAX_BUILDERS
+
+    # Get the number of our creeps in this room.
+    num_creeps = 0
+    num_harvesters = 0
+    num_builders = 0
+    for name in Object.keys(Game.creeps):
+        countCreep = Game.creeps[name]
+        if countCreep.pos.roomName == creep.pos.roomName:
+            if countCreep.memory.role == "harvester":
+                num_harvesters += 1
+            elif countCreep.memory.role == "builder":
+                num_builders += 1
+        
+    num_creeps = num_harvesters + num_builders
+    num_links = creep.room.find(FIND_MY_STRUCTURES, { "filter": lambda s: (s.structureType == STRUCTURE_LINK)}).length
     
     #If this is the first time we've seen this creep, track it as having always been on all roads
     if creep.memory.allRoads == undefined:
@@ -108,18 +123,20 @@ def run_harvester(creep, num_creeps):
     # If we're full, stop filling up and remove the saved source and any saved targets
     if creep.memory.filling and creep.store.getFreeCapacity() == 0:
         creep.memory.filling = False
-        #Harvesters should stick to sources that are next to a link structure, and not move any longer
-        closeLink = creep.pos.findInRange(FIND_MY_STRUCTURES, 1, { "filter": lambda s: (s.structureType == STRUCTURE_LINK)})
-        if closeLink.length > 0 and closeLink[0].id != creep.memory.spawnLink.id:
-            if globals.DEBUG_LINKS:
-                print(creep + " has new sticky source: " + creep.memory.source + " for link " + closeLink[0])
-            creep.memory.stickySource = creep.memory.source
-            creep.memory.closeLink = closeLink[0]
-            creep.say("🔄 sticking")
-        else:
-            if globals.DEBUG_LINKS:
-                print(creep + " has no link nearby, unsticking")
-            del creep.memory.stickySource
+        
+        #Harvesters should stick to sources that are next to a link structure, and not move any longer, if there are move harvesters than links        
+        if num_harvesters > num_links - 1:
+            closeLink = creep.pos.findInRange(FIND_MY_STRUCTURES, 1, { "filter": lambda s: (s.structureType == STRUCTURE_LINK)})
+            if closeLink.length > 0 and closeLink[0].id != creep.memory.spawnLink.id:
+                if globals.DEBUG_LINKS:
+                    print(creep + " has new sticky source: " + creep.memory.source + " for link " + closeLink[0])
+                creep.memory.stickySource = creep.memory.source
+                creep.memory.closeLink = closeLink[0]
+                creep.say("🔄 sticking")
+            else:
+                if globals.DEBUG_LINKS:
+                    print(creep + " has no link nearby, unsticking")
+                del creep.memory.stickySource
 
         del creep.memory.source
         del creep.memory.target
@@ -149,6 +166,8 @@ def run_harvester(creep, num_creeps):
         # If we have a saved target, use it
         if creep.memory.target:
             target = creep.memory.target
+            if globals.DEBUG_HARVESTERS:
+                print(creep.name + " is using saved target: " + target)
         else:
             #if we have a sticky source, we must be next to a link, use that
             if creep.memory.stickySource:
