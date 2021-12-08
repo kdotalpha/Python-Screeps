@@ -67,7 +67,7 @@ def run_builder(creep):
         if not target:
             target = globals.getTower(creep)
             if globals.DEBUG_BUILDERS and target:
-                print(creep.name + " filling tower to 80%: " + target.structureType)  
+                print(creep.name + " filling tower to 60%: " + target.structureType)  
         
         #Then prioritize filling spawns and extensions with energy, command action is TRANSFER
         if not target:
@@ -94,11 +94,11 @@ def run_builder(creep):
         creep.memory.target = target.id
 
     if creep.memory.filling:
+        #we are building or filling a tower, go get the energy from storage if it exists
         if creep.room.storage and creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 0 and target and \
-            ((target.progress != undefined and target.structureType != STRUCTURE_CONTROLLER) or target.structureType == STRUCTURE_TOWER):
+            ((target.progress != undefined and target.structureType != STRUCTURE_CONTROLLER) or (target.structureType == STRUCTURE_TOWER and globals.BUILDER_TOWER_ENERGY)):
             if globals.DEBUG_BUILDERS:
-                print("Filling from storage")
-            #we are building or filling a tower, so get the energy from storage if it exists
+                print("Filling from storage")            
             harvester.fillCreep(creep, creep.room.storage)
         else:
             harvester.fillCreep(creep)
