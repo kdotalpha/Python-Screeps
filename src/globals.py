@@ -23,7 +23,7 @@ HARVESTER_ROADS = False
 #do towers fix roads
 FIX_ROADS = True
 #do towers fix walls
-FIX_WALLS = False
+FIX_WALLS = True
 #do harvesters/builders mine minerals
 MINE_MINERALS = False
 
@@ -112,8 +112,12 @@ def getSource(creep):
                     print("minerals: " + minerals)
                 if minerals:
                     return minerals
-            #if there are no minerals to extract, return storage
-            return creep.room.storage
+            #if there is no energy in sources and there are no minerals to extract, check if storage has energy
+            if creep.room.storage and creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 0:
+                return creep.room.storage
+            
+            #If there's just no energy and no minerals, return None
+            return None
                 
         return waitSources[_.random(0, waitSources.length - 1)]
 
