@@ -48,13 +48,13 @@ def main():
             spawnLink = globals.getSpawnLink(spawn)
 
             #If we have less than the total max of harvesters, create a harvester
-            if ((creepCount.num_harvesters < globals.MAX_HARVESTERS and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable) or creepCount.num_harvesters == 0) \
-                and spawn.room.energyAvailable >= globals.HARVESTER_BUILDER_MIN_POWER:
+            if ((creepCount.num_harvesters < globals.MAX_HARVESTERS[spawn.pos.roomName] and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable) or creepCount.num_harvesters == 0) \
+                and spawn.room.energyAvailable >= globals.HARVESTER_BUILDER_MIN_POWER[spawn.pos.roomName]:
                 createHarvesterBuilder = True
                 memory = { "memory": { "role": "harvester", "spawnLink": spawnLink } }                
             #otherwise, create a builder
-            elif creepCount.num_builders < globals.MAX_BUILDERS and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable and \
-                spawn.room.energyAvailable >= globals.HARVESTER_BUILDER_MIN_POWER:
+            elif creepCount.num_builders < globals.MAX_BUILDERS[spawn.pos.roomName] and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable and \
+                spawn.room.energyAvailable >= globals.HARVESTER_BUILDER_MIN_POWER[spawn.pos.roomName]:
                 createHarvesterBuilder = True
                 memory = { "memory": { "role": "builder", "spawnLink": spawnLink } }
             
@@ -62,10 +62,10 @@ def main():
                 if globals.DEBUG_CREEP_CREATION:
                     print("All road harvesters: " + allRoadHarvesters + " Total harvesters: " + creepCount.num_harvesters)    
                 creep_name = Game.time
-                energy = _.min([spawn.room.energyAvailable, globals.HARVESTER_BUILDER_MAX_POWER])
+                energy = _.min([spawn.room.energyAvailable, globals.HARVESTER_BUILDER_MAX_POWER[spawn.pos.roomName]])
                 creepParts = []
-                energyUnits = _(energy / globals.HARVESTER_BUILDER_MIN_POWER).floor()
-                energyRemainder = energy - (energyUnits * globals.HARVESTER_BUILDER_MIN_POWER)
+                energyUnits = _(energy / globals.HARVESTER_BUILDER_MIN_POWER[spawn.pos.roomName]).floor()
+                energyRemainder = energy - (energyUnits * globals.HARVESTER_BUILDER_MIN_POWER[spawn.pos.roomName])
                 print("energy remainder: " + energyRemainder)
                 for part in range(0, energyUnits):
                     #for each energy unit of 300

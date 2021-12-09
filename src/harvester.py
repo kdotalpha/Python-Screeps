@@ -19,7 +19,7 @@ def run_harvester(creep):
     #increase max_creeps as we build new types of creeps
     #TODO: this currently has a bug where if I'm in multiple rooms, I'm only looking at the max values instead of the values per room when
     #deciding whether or not to build more creeps
-    max_creeps = globals.MAX_HARVESTERS + globals.MAX_BUILDERS
+    max_creeps = globals.MAX_HARVESTERS[creep.pos.roomName] + globals.MAX_BUILDERS[creep.pos.roomName]
 
     # Get the number of our creeps in this room.
     creepCount = globals.getMyCreepsInRoom(creep.pos.roomName)
@@ -77,7 +77,7 @@ def run_harvester(creep):
             globals.fillCreep(creep, Game.getObjectById(creep.memory.stickySource))
         else:
             globals.fillCreep(creep)
-        if globals.HARVESTER_ROADS:
+        if globals.HARVESTER_ROADS[creep.pos.roomName]:
             try:
                 creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD)
             except:
@@ -86,8 +86,8 @@ def run_harvester(creep):
         # If we have a saved target, use it
         if creep.memory.target:
             target = creep.memory.target
-            if globals.DEBUG_HARVESTERS:
-                print(creep.name + " is using saved target: " + target)
+            #if globals.DEBUG_HARVESTERS:
+            #    print(creep.name + " is using saved target: " + target)
         else:
             #if we have a sticky source, we must be next to a link, use that
             if creep.memory.stickySource:
@@ -152,14 +152,14 @@ def run_harvester(creep):
                 # Let the creeps get a little bit closer than required to the controller, to make room for other creeps.
                 if not creep.pos.inRangeTo(target, 2):
                     creep.moveTo(target, {"visualizePathStyle": { "stroke": "#ffffff" } })
-                    if globals.HARVESTER_ROADS:
+                    if globals.HARVESTER_ROADS[creep.pos.roomName]:
                         try:
                             creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD)
                         except:
                             pass
         elif target:
             creep.moveTo(target, {"visualizePathStyle": { "stroke": "#ffffff" } })
-            if globals.HARVESTER_ROADS:
+            if globals.HARVESTER_ROADS[creep.pos.roomName]:
                 try:
                     creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD)
                 except:

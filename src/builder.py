@@ -95,7 +95,7 @@ def run_builder(creep):
     if creep.memory.filling:
         #we are building or filling a tower, go get the energy from storage if it exists
         if creep.room.storage and creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 0 and target and \
-            ((target.progress != undefined and target.structureType != STRUCTURE_CONTROLLER) or (target.structureType == STRUCTURE_TOWER and globals.BUILDER_TOWER_ENERGY)):
+            ((target.progress != undefined and target.structureType != STRUCTURE_CONTROLLER) or (target.structureType == STRUCTURE_TOWER and globals.BUILDER_TOWER_ENERGY[creep.pos.roomName])):
             if globals.DEBUG_BUILDERS:
                 print("Filling from storage")            
             globals.fillCreep(creep, creep.room.storage)

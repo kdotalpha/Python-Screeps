@@ -34,13 +34,13 @@ def run_tower(tower):
     #if there is nothing to heal, move on to doing repairs of my structures until we get down to a certain reserve, which we save for killing enemies
     #fix roads before other structures
     #TODO: Create a full structure priority list
-    if not target and tower.store.getUsedCapacity(RESOURCE_ENERGY) > globals.TOWER_ENERGY_RESERVE_PERCENTAGE * tower.store.getCapacity(RESOURCE_ENERGY):
-        if globals.FIX_ROADS:
+    if not target and tower.store.getUsedCapacity(RESOURCE_ENERGY) > globals.TOWER_ENERGY_RESERVE_PERCENTAGE[tower.pos.roomName] * tower.store.getCapacity(RESOURCE_ENERGY):
+        if globals.FIX_ROADS[tower.pos.roomName]:
             target = globals.getBrokenStructure(tower, True, 1, False, None, STRUCTURE_ROAD)
         if not target:
             #heal ramparts
             target = globals.getBrokenStructure(tower, True, 0.05, True, None, STRUCTURE_RAMPART)
-        if not target and globals.FIX_WALLS:
+        if not target and globals.FIX_WALLS[tower.pos.roomName]:
             #heal walls to 5%
             target = globals.getBrokenStructure(tower, True, 0.001, False, None, STRUCTURE_WALL)
         if not target:

@@ -15,19 +15,29 @@ __pragma__('noalias', 'type')
 __pragma__('noalias', 'update')
 
 
-#do builders use storage energy when refilling towers
-BUILDER_TOWER_ENERGY = False
-#do harvesters tell builders where to put roads in a room
-HARVESTER_ROADS = False
-#do towers fix roads
-FIX_ROADS = True
-#do towers fix walls
-FIX_WALLS = True
-#do harvesters/builders mine minerals
-MINE_MINERALS = False
+CONTROLLED_ROOMS = ["E26S42"]
+#TEST = { CONTROLLED_ROOMS[0]: True }
+#roomName = spawn.pos.roomName
+#print(globals.TEST[roomName])
 
-MAX_HARVESTERS = 3
-MAX_BUILDERS = 2
+#do builders use storage energy when refilling towers
+BUILDER_TOWER_ENERGY = { CONTROLLED_ROOMS[0]: False }
+#do harvesters tell builders where to put roads in a room
+HARVESTER_ROADS = { CONTROLLED_ROOMS[0]: False }
+#do towers fix roads
+FIX_ROADS = { CONTROLLED_ROOMS[0]: True }
+#do towers fix walls
+FIX_WALLS = { CONTROLLED_ROOMS[0]: True }
+#do harvesters/builders mine minerals
+MINE_MINERALS = { CONTROLLED_ROOMS[0]: False }
+
+MAX_HARVESTERS = { CONTROLLED_ROOMS[0]: 3 }
+MAX_BUILDERS = { CONTROLLED_ROOMS[0]: 2 }
+
+TOWER_ENERGY_RESERVE_PERCENTAGE = { CONTROLLED_ROOMS[0]: 0.3 }
+HARVESTER_BUILDER_MAX_POWER = { CONTROLLED_ROOMS[0]: 1800 }
+HARVESTER_BUILDER_MIN_POWER = { CONTROLLED_ROOMS[0]: 300 }
+MAX_CREEP_WAIT = { CONTROLLED_ROOMS[0]: 50 }
 
 #debugs
 DEBUG_HARVESTERS = True
@@ -37,10 +47,7 @@ DEBUG_SOURCE_SELECTION = False
 DEBUG_TOWERS = False
 DEBUG_LINKS = False
 
-TOWER_ENERGY_RESERVE_PERCENTAGE = 0.3
-HARVESTER_BUILDER_MAX_POWER = 1800
-HARVESTER_BUILDER_MIN_POWER = 300
-MAX_CREEP_WAIT = 50
+
 
 def fillCreep(creep, customSource = False):
     # If we have a saved source, use it
@@ -97,7 +104,7 @@ def fillCreep(creep, customSource = False):
             else:
                 creep.memory.waiting = 1
             waiting_creeps = source.pos.findInRange(FIND_MY_CREEPS, 2, {"filter": lambda s: (s.memory.waiting > 1)})
-            if waiting_creeps.length > 1 or creep.memory.waiting >= MAX_CREEP_WAIT:
+            if waiting_creeps.length > 1 or creep.memory.waiting >= MAX_CREEP_WAIT[creep.pos.roomName]:
                 #too many creeps waiting, 50/50 find a new source
                 if _.random(0,1) == 0:
                     creep.say("🔄 wait")
@@ -188,7 +195,7 @@ def getSource(creep):
                 waitSources.append(source)
         #if there is truly nothing else to gather, check for minerals to extract
         if waitSources.length == 0:
-            if MINE_MINERALS:
+            if MINE_MINERALS[creep.pos.roomName]:
                 if DEBUG_SOURCE_SELECTION:
                     print("checking for minerals")
                 minerals = getExtractableMinerals(creep.room)
