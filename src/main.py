@@ -37,17 +37,9 @@ def main():
         spawn = Game.spawns[name]
 
         links.runLinks(spawn)
+        
         # Get the number of our creeps in this room.
-        #TODO: Factor this out
-        num_harvesters = 0
-        num_builders = 0
-        for name in Object.keys(Game.creeps):
-            creep = Game.creeps[name]
-            if creep.pos.roomName == spawn.pos.roomName:
-                if creep.memory.role == "harvester":
-                    num_harvesters += 1
-                elif creep.memory.role == "builder":
-                    num_builders += 1
+        creepCount = globals.getMyCreepsInRoom(spawn.pos.roomName)
     
         if not spawn.spawning:
 
@@ -56,19 +48,19 @@ def main():
             spawnLink = globals.getSpawnLink(spawn)
 
             #If we have less than the total max of harvesters, create a harvester
-            if ((num_harvesters < globals.MAX_HARVESTERS and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable) or num_harvesters == 0) \
+            if ((creepCount.num_harvesters < globals.MAX_HARVESTERS and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable) or creepCount.num_harvesters == 0) \
                 and spawn.room.energyAvailable >= globals.HARVESTER_BUILDER_MIN_POWER:
                 createHarvesterBuilder = True
                 memory = { "memory": { "role": "harvester", "spawnLink": spawnLink } }                
             #otherwise, create a builder
-            elif num_builders < globals.MAX_BUILDERS and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable and \
+            elif creepCount.num_builders < globals.MAX_BUILDERS and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable and \
                 spawn.room.energyAvailable >= globals.HARVESTER_BUILDER_MIN_POWER:
                 createHarvesterBuilder = True
                 memory = { "memory": { "role": "builder", "spawnLink": spawnLink } }
             
             if createHarvesterBuilder:
                 if globals.DEBUG_CREEP_CREATION:
-                    print("All road harvesters: " + allRoadHarvesters + " Total harvesters: " + num_harvesters)    
+                    print("All road harvesters: " + allRoadHarvesters + " Total harvesters: " + creepCount.num_harvesters)    
                 creep_name = Game.time
                 energy = _.min([spawn.room.energyAvailable, globals.HARVESTER_BUILDER_MAX_POWER])
                 creepParts = []

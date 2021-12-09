@@ -1,6 +1,5 @@
-from defs import *
 import globals
-import harvester
+from defs import *
 
 __pragma__('noalias', 'name')
 __pragma__('noalias', 'undefined')
@@ -69,7 +68,13 @@ def run_builder(creep):
             if globals.DEBUG_BUILDERS and target:
                 print(creep.name + " refilling energy: " + target.structureType)
         
-        #Then fill towers to 100%
+         #Then fill towers to 60%
+        if not target:
+            target = globals.getTower(creep)
+            if globals.DEBUG_BUILDERS and target:
+                print(creep.name + " filling tower to min viable: " + target.structureType)         
+
+        #Then fill all towers to 100%
         if not target:
             target = globals.getTower(creep, 1)
             if globals.DEBUG_BUILDERS and target:
@@ -93,9 +98,9 @@ def run_builder(creep):
             ((target.progress != undefined and target.structureType != STRUCTURE_CONTROLLER) or (target.structureType == STRUCTURE_TOWER and globals.BUILDER_TOWER_ENERGY)):
             if globals.DEBUG_BUILDERS:
                 print("Filling from storage")            
-            harvester.fillCreep(creep, creep.room.storage)
+            globals.fillCreep(creep, creep.room.storage)
         else:
-            harvester.fillCreep(creep)
+            globals.fillCreep(creep)
     else:
         #try to perform the appropriate action and get closer, if the error is that you're not in range, just get closer
         #Check if this a target we need to BUILD

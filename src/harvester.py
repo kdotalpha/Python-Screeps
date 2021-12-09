@@ -10,75 +10,6 @@ __pragma__('noalias', 'set')
 __pragma__('noalias', 'type')
 __pragma__('noalias', 'update')
 
-def fillCreep(creep, customSource = False):
-    # If we have a saved source, use it
-    if creep.memory.source:
-        source = Game.getObjectById(creep.memory.source)
-        if source == None:
-            del creep.memory.source
-            return
-    else:
-        # Get a random new source and save it
-        if customSource:
-            source = customSource
-        else:
-            source = globals.getSource(creep)
-        creep.memory.source = source.id
-
-    if creep.pos.isNearTo(source):
-        # If we're near the source, harvest it - otherwise, move to it.
-        if source.structureType == STRUCTURE_STORAGE or source.structureType == STRUCTURE_LINK:
-            creep.say("🔄 withdraw")
-            result = creep.withdraw(source, RESOURCE_ENERGY)
-        #this is a tombstone
-        elif source.deathTime != undefined and _.find(source.store) != undefined:
-            creep.say("🔄 tombstone")
-            result = creep.withdraw(source, _.findKey(source.store))
-        elif source.structureType == STRUCTURE_EXTRACTOR:
-            creep.say("🔄 minerals")
-            result = creep.harvest(source)
-        #this is a dropped resource
-        elif source.resourceType != undefined:
-            creep.say("🔄 pickup")
-            result = creep.pickup(source)
-        else: 
-            result = creep.harvest(source)
-        if result == ERR_NOT_ENOUGH_RESOURCES:
-            #we've mined this out, stop filling and delete this source
-            creep.say("🔄 OOE")
-            del creep.memory.source
-            creep.memory.filling = False
-        elif result != OK:
-            #stick around if it is a mineral in cooldown
-            if result == ERR_TIRED and source.mineralAmount != undefined:
-                pass
-            else:
-                print("[{}] Unknown result from creep.harvest({}): {}".format(creep.name, source, result))
-                del creep.memory.source
-    else:
-        #wait if the source is currently being used by someone else, so as not to crowd them in, but only do this if it is a real source or a mineral
-        waiting = (creep.pos.getRangeTo(source) == 2 and source.pos.findInRange(FIND_MY_CREEPS, 1) != 0 and (source.ticksToRegeneration or source.mineralType))
-        #store how long they have been waiting for later debug purposes
-        if waiting:
-            if creep.memory.waiting:
-                creep.memory.waiting += 1
-            else:
-                creep.memory.waiting = 1
-            waiting_creeps = source.pos.findInRange(FIND_MY_CREEPS, 2, {"filter": lambda s: (s.memory.waiting > 1)})
-            if waiting_creeps.length > 1 or creep.memory.waiting >= globals.MAX_CREEP_WAIT:
-                #too many creeps waiting, 50/50 find a new source
-                if _.random(0,1) == 0:
-                    creep.say("🔄 wait")
-                    del creep.memory.source
-                    del creep.memory.waiting
-
-        #If I'm not waiting, or the source is a dropped resource and not a mineral, move closer
-        if not waiting or (source.energyCapacity == undefined and source.mineralType == undefined):
-            if source == creep.memory.spawnLink:
-                source = Game.getObjectById(source)
-            creep.moveTo(source, {"visualizePathStyle": { "stroke": "#ffffff" } })
-            del creep.memory.waiting
-
 
 def run_harvester(creep):
     """
@@ -91,18 +22,7 @@ def run_harvester(creep):
     max_creeps = globals.MAX_HARVESTERS + globals.MAX_BUILDERS
 
     # Get the number of our creeps in this room.
-    num_creeps = 0
-    num_harvesters = 0
-    num_builders = 0
-    for name in Object.keys(Game.creeps):
-        countCreep = Game.creeps[name]
-        if countCreep.pos.roomName == creep.pos.roomName:
-            if countCreep.memory.role == "harvester":
-                num_harvesters += 1
-            elif countCreep.memory.role == "builder":
-                num_builders += 1
-        
-    num_creeps = num_harvesters + num_builders
+    creepCount = globals.getMyCreepsInRoom(creep.pos.roomName)
     num_links = creep.room.find(FIND_MY_STRUCTURES, { "filter": lambda s: (s.structureType == STRUCTURE_LINK)}).length
     
     #If this is the first time we've seen this creep, track it as having always been on all roads
@@ -125,7 +45,7 @@ def run_harvester(creep):
         creep.memory.filling = False
         
         #Harvesters should stick to sources that are next to a link structure, and not move any longer, if there are move harvesters than links        
-        if num_harvesters > num_links - 1:
+        if creepCount.num_harvesters > num_links - 1:
             closeLink = creep.pos.findInRange(FIND_MY_STRUCTURES, 1, { "filter": lambda s: (s.structureType == STRUCTURE_LINK)})
             if closeLink.length > 0 and closeLink[0].id != creep.memory.spawnLink.id:
                 if globals.DEBUG_LINKS:
@@ -154,9 +74,9 @@ def run_harvester(creep):
     # calling into creep.memory.X is a boolean, unless you use Game.getObjectById to get the value
     if creep.memory.filling:
         if creep.memory.stickySource:
-            fillCreep(creep, Game.getObjectById(creep.memory.stickySource))
+            globals.fillCreep(creep, Game.getObjectById(creep.memory.stickySource))
         else:
-            fillCreep(creep)
+            globals.fillCreep(creep)
         if globals.HARVESTER_ROADS:
             try:
                 creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD)
@@ -182,7 +102,7 @@ def run_harvester(creep):
                 if globals.DEBUG_HARVESTERS:
                     print("Depositing rare materials")
             #if there is less than the max number of creeps, put the energy in a spawn/extension that isn't at max energy. Otherwise, pick a random target
-            elif num_creeps < max_creeps:
+            elif creepCount.num_creeps < max_creeps:
                 if globals.DEBUG_HARVESTERS:
                     print("Less than max # of creeps, prioritizng extensions")
                 target = globals.getEnergyStorageStructure(creep)

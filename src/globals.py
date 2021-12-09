@@ -1,4 +1,3 @@
-import random
 # defs is a package which claims to export all constants and some JavaScript objects, but in reality does
 #  nothing. This is useful mainly when using an editor like PyCharm, so that it 'knows' that things like Object, Creep,
 #  Game, etc. do exist.
@@ -34,7 +33,7 @@ MAX_BUILDERS = 2
 DEBUG_HARVESTERS = True
 DEBUG_CREEP_CREATION = True
 DEBUG_BUILDERS = False
-DEBUG_SOURCE_SELECTION = True
+DEBUG_SOURCE_SELECTION = False
 DEBUG_TOWERS = False
 DEBUG_LINKS = False
 
@@ -43,6 +42,91 @@ HARVESTER_BUILDER_MAX_POWER = 1800
 HARVESTER_BUILDER_MIN_POWER = 300
 MAX_CREEP_WAIT = 50
 
+def fillCreep(creep, customSource = False):
+    # If we have a saved source, use it
+    if creep.memory.source:
+        source = Game.getObjectById(creep.memory.source)
+        if source == None:
+            del creep.memory.source
+            return
+    else:
+        # Get a random new source and save it
+        if customSource:
+            source = customSource
+        else:
+            source = getSource(creep)
+        creep.memory.source = source.id
+
+    if creep.pos.isNearTo(source):
+        # If we're near the source, harvest it - otherwise, move to it.
+        if source.structureType == STRUCTURE_STORAGE or source.structureType == STRUCTURE_LINK:
+            creep.say("🔄 withdraw")
+            result = creep.withdraw(source, RESOURCE_ENERGY)
+        #this is a tombstone
+        elif source.deathTime != undefined and _.find(source.store) != undefined:
+            creep.say("🔄 tombstone")
+            result = creep.withdraw(source, _.findKey(source.store))
+        elif source.structureType == STRUCTURE_EXTRACTOR:
+            creep.say("🔄 minerals")
+            result = creep.harvest(source)
+        #this is a dropped resource
+        elif source.resourceType != undefined:
+            creep.say("🔄 pickup")
+            result = creep.pickup(source)
+        else: 
+            result = creep.harvest(source)
+        if result == ERR_NOT_ENOUGH_RESOURCES:
+            #we've mined this out, stop filling and delete this source
+            creep.say("🔄 OOE")
+            del creep.memory.source
+            creep.memory.filling = False
+        elif result != OK:
+            #stick around if it is a mineral in cooldown
+            if result == ERR_TIRED and source.mineralAmount != undefined:
+                pass
+            else:
+                print("[{}] Unknown result from creep.harvest({}): {}".format(creep.name, source, result))
+                del creep.memory.source
+    else:
+        #wait if the source is currently being used by someone else, so as not to crowd them in, but only do this if it is a real source or a mineral
+        waiting = (creep.pos.getRangeTo(source) == 2 and source.pos.findInRange(FIND_MY_CREEPS, 1) != 0 and (source.ticksToRegeneration or source.mineralType))
+        #store how long they have been waiting for later debug purposes
+        if waiting:
+            if creep.memory.waiting:
+                creep.memory.waiting += 1
+            else:
+                creep.memory.waiting = 1
+            waiting_creeps = source.pos.findInRange(FIND_MY_CREEPS, 2, {"filter": lambda s: (s.memory.waiting > 1)})
+            if waiting_creeps.length > 1 or creep.memory.waiting >= MAX_CREEP_WAIT:
+                #too many creeps waiting, 50/50 find a new source
+                if _.random(0,1) == 0:
+                    creep.say("🔄 wait")
+                    del creep.memory.source
+                    del creep.memory.waiting
+
+        #If I'm not waiting, or the source is a dropped resource and not a mineral, move closer
+        if not waiting or (source.energyCapacity == undefined and source.mineralType == undefined):
+            if source == creep.memory.spawnLink:
+                source = Game.getObjectById(source)
+            creep.moveTo(source, {"visualizePathStyle": { "stroke": "#ffffff" } })
+            del creep.memory.waiting
+
+def getMyCreepsInRoom(roomName):
+    num_creeps = 0
+    num_harvesters = 0
+    num_builders = 0
+    for name in Object.keys(Game.creeps):
+        countCreep = Game.creeps[name]
+        if countCreep.pos.roomName == roomName:
+            if countCreep.memory.role == "harvester":
+                num_harvesters += 1
+            elif countCreep.memory.role == "builder":
+                num_builders += 1
+    num_creeps = num_harvesters + num_builders
+
+    return { "num_creeps": num_creeps, 
+            "num_harvesters": num_harvesters, 
+            "num_builders": num_builders }
 
 def getSource(creep):
     #If there is a dropped source, just go there
@@ -135,7 +219,6 @@ def getExtractableMinerals(room):
     if extractor:
         return mineral
     return None
-    
 
 def getSpawnLink(spawn):
     link = spawn.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": lambda s: ((s.structureType == STRUCTURE_LINK))})
@@ -214,24 +297,19 @@ def getEnergyStorageStructure(creep, closest = True, controller = False, storage
             return target
 
     if controller:
-        #ignore closest
-        #determine randomly whether the energy goes to a spawn/extension or controller
-        #then pick the closest of the winners
-        selector = _.random(0, 9)
-        if selector != 0:
-            #go to the closest spawn/extension
-            target = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { "filter": \
+        #go to the closest spawn/extension
+        target = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { "filter": \
+            lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION) 
+                    and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) })
+        if not target:
+            target = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": \
                 lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION) 
                         and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) })
-            if not target:
-                target = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": \
-                    lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION) 
-                            and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) })
-        if selector == 0 or target == undefined:
+        if target == undefined:
             #go to the controller
             target = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": \
                 lambda s: ((s.structureType == STRUCTURE_CONTROLLER)) })
-        return target        
+            return target        
     if not closest:
         return _(creep.room.find(FIND_MY_STRUCTURES)) \
             .filter(lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION)
@@ -246,5 +324,4 @@ def getEnergyStorageStructure(creep, closest = True, controller = False, storage
                 lambda s: (((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION) 
                         and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) })
         return target
-
 
