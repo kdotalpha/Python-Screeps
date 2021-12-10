@@ -69,9 +69,9 @@ def run_builder(creep):
             if globals.DEBUG_BUILDERS and target:
                 print(creep.name + " refilling energy: " + target.structureType)
         
-         #Then fill towers to 60%
+         #Then fill towers
         if not target:
-            target = globals.getTower(creep)
+            target = globals.getTower(creep, 0.9)
             if globals.DEBUG_BUILDERS and target:
                 print(creep.name + " filling tower to min viable: " + target.structureType)         
 

@@ -10,7 +10,7 @@ __pragma__('noalias', 'set')
 __pragma__('noalias', 'type')
 __pragma__('noalias', 'update')
 
-def run_mineral_miner(creep):
+def run_miner(creep):
     """
     Runs a creep as a mineral miner.
     :param creep: The creep to run

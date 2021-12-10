@@ -8,6 +8,7 @@ import globals
 import builder
 import tower
 import links
+import miner
 
 # These are currently required for Transcrypt in order to use the following names in JavaScript.
 # Without the 'noalias' pragma, each of the following would be translated into something like 'py_Infinity' or
@@ -46,15 +47,17 @@ def main():
             #allRoadHarvesters = spawn.room.find(FIND_MY_CREEPS, {"filter": lambda s: ((s.memory.role == "harvester" and s.allRoads == True))}).length == num_harvesters and num_harvesters != 0
             allRoadHarvesters = True
             spawnLink = globals.getSpawnLink(spawn)
+            makeMiner = globals.getExtractableMinerals(spawn.room)
+            
 
             #If we have less than the total max of harvesters, create a harvester
             if ((creepCount.num_harvesters < globals.MAX_HARVESTERS[spawn.pos.roomName] and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable) or creepCount.num_harvesters == 0) \
-                and spawn.room.energyAvailable >= globals.HARVESTER_BUILDER_MIN_POWER[spawn.pos.roomName]:
+                and spawn.room.energyAvailable >= globals.CREEP_MIN_POWER[spawn.pos.roomName]:
                 createHarvesterBuilder = True
                 memory = { "memory": { "role": "harvester", "spawnLink": spawnLink } }                
             #otherwise, create a builder
             elif creepCount.num_builders < globals.MAX_BUILDERS[spawn.pos.roomName] and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable and \
-                spawn.room.energyAvailable >= globals.HARVESTER_BUILDER_MIN_POWER[spawn.pos.roomName]:
+                spawn.room.energyAvailable >= globals.CREEP_MIN_POWER[spawn.pos.roomName]:
                 createHarvesterBuilder = True
                 memory = { "memory": { "role": "builder", "spawnLink": spawnLink } }
             
@@ -64,8 +67,8 @@ def main():
                 creep_name = Game.time
                 energy = _.min([spawn.room.energyAvailable, globals.HARVESTER_BUILDER_MAX_POWER[spawn.pos.roomName]])
                 creepParts = []
-                energyUnits = _(energy / globals.HARVESTER_BUILDER_MIN_POWER[spawn.pos.roomName]).floor()
-                energyRemainder = energy - (energyUnits * globals.HARVESTER_BUILDER_MIN_POWER[spawn.pos.roomName])
+                energyUnits = _(energy / globals.CREEP_MIN_POWER[spawn.pos.roomName]).floor()
+                energyRemainder = energy - (energyUnits * globals.CREEP_MIN_POWER[spawn.pos.roomName])
                 print("energy remainder: " + energyRemainder)
                 for part in range(0, energyUnits):
                     #for each energy unit of 300
@@ -130,6 +133,10 @@ def main():
                 elif globals.DEBUG_CREEP_CREATION:
                     print("Creating a new creep named " + creep_name + " with energy " + energy + " with role: " + memory.memory.role + " with parts: " + creepParts)
 
+            elif makeMiner and creepCount.num_miners < 1 and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable and \
+                spawn.room.energyAvailable >= globals.CREEP_MIN_POWER[spawn.pos.roomName]:
+                memory = { "memory": { "role": "miner", "mineral": makeMiner } }
+
         
     # Run creeps in all rooms
     for name in Object.keys(Game.creeps):
@@ -138,6 +145,8 @@ def main():
             harvester.run_harvester(creep)
         elif creep.memory.role == "builder":
             builder.run_builder(creep)
+        elif creep.memory.role == "miner":
+            miner.run_miner(creep)
 
     # Run Towers in all rooms
     for struct in Object.keys(Game.structures):

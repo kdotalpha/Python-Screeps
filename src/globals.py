@@ -42,7 +42,8 @@ TOWER_WALL_PERCENTAGE = { CONTROLLED_ROOMS[0]: 0.0011 }
 MAX_HARVESTERS = { CONTROLLED_ROOMS[0]: 4 }
 MAX_BUILDERS = { CONTROLLED_ROOMS[0]: 1 }
 HARVESTER_BUILDER_MAX_POWER = { CONTROLLED_ROOMS[0]: 1800 }
-HARVESTER_BUILDER_MIN_POWER = { CONTROLLED_ROOMS[0]: 300 }
+MINER_MAX_POWER = { CONTROLLED_ROOMS[0]: 1800 }
+CREEP_MIN_POWER = { CONTROLLED_ROOMS[0]: 300 }
 #Controls how many ticks a creep will wait at a used source before searching for a new source
 MAX_CREEP_WAIT = { CONTROLLED_ROOMS[0]: 30 }
 
@@ -139,6 +140,7 @@ def getMyCreepsInRoom(roomName):
     num_creeps = 0
     num_harvesters = 0
     num_builders = 0
+    num_miners = 0
     for name in Object.keys(Game.creeps):
         countCreep = Game.creeps[name]
         if countCreep.pos.roomName == roomName:
@@ -146,11 +148,14 @@ def getMyCreepsInRoom(roomName):
                 num_harvesters += 1
             elif countCreep.memory.role == "builder":
                 num_builders += 1
-    num_creeps = num_harvesters + num_builders
+            elif countCreep.memory.role == "miner":
+                num_miners += 1
+    num_creeps = num_harvesters + num_builders + num_miners
 
-    return { "num_creeps": num_creeps, 
+    return {"num_creeps": num_creeps, 
             "num_harvesters": num_harvesters, 
-            "num_builders": num_builders }
+            "num_builders": num_builders,
+            "num_miners": num_miners }
 
 def getSource(creep):
     #If there is a dropped source, just go there
@@ -298,7 +303,7 @@ def getBrokenStructure(creep, closest=True, hitsMinPercentage=1, myStructures = 
         print("Finding closest broken structure")
     return creep.pos.findClosestByRange(FIND_CONSTANT, { "filter": lambda s: ((s.hits < (s.hitsMax * hitsMinPercentage) and s.structureType == structureType)) })
 
-def getTower(creep, maxEnergyPercentage = 0.6):
+def getTower(creep, maxEnergyPercentage = 0.7):
     """
     Gets the closest tower in the same room as a creep
     :param creep: The creep to run
