@@ -16,11 +16,6 @@ def run_harvester(creep):
     Runs a creep as a generic harvester.
     :param creep: The creep to run
     """
-    #increase max_creeps as we build new types of creeps
-    #TODO: this currently has a bug where if I'm in multiple rooms, I'm only looking at the max values instead of the values per room when
-    #deciding whether or not to build more creeps
-    max_creeps = globals.MAX_HARVESTERS[creep.pos.roomName] + globals.MAX_BUILDERS[creep.pos.roomName]
-
     # Get the number of our creeps in this room.
     creepCount = globals.getMyCreepsInRoom(creep.pos.roomName)
     num_links = creep.room.find(FIND_MY_STRUCTURES, { "filter": lambda s: (s.structureType == STRUCTURE_LINK)}).length
@@ -101,19 +96,14 @@ def run_harvester(creep):
                     print("Sending to link")
             #if the creep is holding a resource that is not RESOURCE_ENERGY, go put that in storage
             elif _.find(creep.store) != undefined and _.find(creep.store) != creep.store.getUsedCapacity(RESOURCE_ENERGY):
-                target = globals.getEnergyStorageStructure(creep, True, False, True)
+                target = globals.getEnergyStorageStructure(creep, True)
                 if globals.DEBUG_HARVESTERS:
                     print("Depositing rare materials")
-            #if there is less than the max number of creeps, put the energy in a spawn/extension that isn't at max energy. Otherwise, pick a random target
-            elif creepCount.num_creeps < max_creeps:
-                if globals.DEBUG_HARVESTERS:
-                    print("Less than max # of creeps, prioritizng extensions")
-                target = globals.getEnergyStorageStructure(creep)
             else: 
-                # Get a random new target.
+                #Put it in the closest energy store
                 if globals.DEBUG_HARVESTERS:
                     print("Picking random target")
-                target = globals.getEnergyStorageStructure(creep, False, True)
+                target = globals.getEnergyStorageStructure(creep)
 
             creep.memory.target = target.id
             if globals.CREEP_SPEAK:

@@ -69,7 +69,6 @@ def main():
                 creepParts = []
                 energyUnits = _(energy / globals.CREEP_MIN_POWER[spawn.pos.roomName]).floor()
                 energyRemainder = energy - (energyUnits * globals.CREEP_MIN_POWER[spawn.pos.roomName])
-                print("energy remainder: " + energyRemainder)
                 for part in range(0, energyUnits):
                     #for each energy unit of 300
                     if allRoadHarvesters:
@@ -134,10 +133,44 @@ def main():
                     print("Creating a new creep named " + creep_name + " with energy " + energy + " with role: " + memory.memory.role + " with parts: " + creepParts)
 
             elif makeMiner and creepCount.num_miners < 1 and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable and \
-                spawn.room.energyAvailable >= globals.CREEP_MIN_POWER[spawn.pos.roomName]:
+                spawn.room.energyAvailable >= globals.CREEP_MIN_POWER[spawn.pos.roomName] and globals.MINE_MINERALS[spawn.pos.roomName]:
                 memory = { "memory": { "role": "miner", "mineral": makeMiner } }
+                if globals.DEBUG_CREEP_CREATION:
+                    print("Creating miner")
+                creep_name = Game.time
+                energy = _.min([spawn.room.energyAvailable, globals.MINER_MAX_POWER[spawn.pos.roomName]])
+                creepParts = []
+                energyUnits = _(energy / globals.CREEP_MIN_POWER[spawn.pos.roomName]).floor()
+                energyRemainder = energy - (energyUnits * globals.CREEP_MIN_POWER[spawn.pos.roomName])
+                for part in range(0, energyUnits):
+                    #for each energy unit of 300
+                    creepParts.append(MOVE)
+                    creepParts.append(WORK)
+                    creepParts.append(WORK)
+                    creepParts.append(CARRY)
+                
+                #python really needs a switch block
+                if energyRemainder == 250:
+                    creepParts.append(WORK)
+                    creepParts.append(WORK)
+                    creepParts.append(CARRY)                       
+                elif energyRemainder == 200:
+                    creepParts.append(WORK)
+                    creepParts.append(WORK)
+                elif energyRemainder == 150:
+                    creepParts.append(CARRY)
+                    creepParts.append(WORK)
+                elif energyRemainder == 100:
+                    creepParts.append(WORK)
+                elif energyRemainder == 50:
+                    creepParts.append(CARRY)
+                
+                result = spawn.spawnCreep(creepParts, creep_name, memory)
+                if result != OK:
+                    print("Ran into error creating creep: " + result + " with energy " + energy + " with role: " + memory.memory.role + " with parts: " + creepParts)
+                elif globals.DEBUG_CREEP_CREATION:
+                    print("Creating a new creep named " + creep_name + " with energy " + energy + " with role: " + memory.memory.role + " with parts: " + creepParts)    
 
-        
     # Run creeps in all rooms
     for name in Object.keys(Game.creeps):
         creep = Game.creeps[name]

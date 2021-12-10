@@ -29,7 +29,7 @@ FIX_ROADS = { CONTROLLED_ROOMS[0]: True }
 #do towers fix walls
 FIX_WALLS = { CONTROLLED_ROOMS[0]: True }
 #do harvesters/builders mine minerals
-MINE_MINERALS = { CONTROLLED_ROOMS[0]: False }
+MINE_MINERALS = { CONTROLLED_ROOMS[0]: True }
 
 #What % of energy to reserve in the towers for combat, apart from healing/repairing structures
 TOWER_ENERGY_RESERVE_PERCENTAGE = { CONTROLLED_ROOMS[0]: 0.3 }
@@ -49,8 +49,9 @@ MAX_CREEP_WAIT = { CONTROLLED_ROOMS[0]: 30 }
 
 #debugs
 DEBUG_HARVESTERS = False
-DEBUG_CREEP_CREATION = True
 DEBUG_BUILDERS = False
+DEBUG_MINERS = False
+DEBUG_CREEP_CREATION = True
 DEBUG_SOURCE_SELECTION = False
 DEBUG_TOWERS = False
 DEBUG_LINKS = False
@@ -217,19 +218,11 @@ def getSource(creep):
                 waitSources.append(source)
         #if there is truly nothing else to gather, check for minerals to extract
         if waitSources.length == 0:
-            if MINE_MINERALS[creep.pos.roomName]:
-                if DEBUG_SOURCE_SELECTION:
-                    print("checking for minerals")
-                minerals = getExtractableMinerals(creep.room)
-                if DEBUG_SOURCE_SELECTION:
-                    print("minerals: " + minerals)
-                if minerals:
-                    return minerals
             #if there is no energy in sources and there are no minerals to extract, check if storage has energy
             if creep.room.storage and creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 0:
                 return creep.room.storage
             
-            #If there's just no energy and no minerals, return None
+            #If there's just no energy return None
             return None
                 
         return waitSources[_.random(0, waitSources.length - 1)]
@@ -316,7 +309,7 @@ def getTower(creep, maxEnergyPercentage = 0.7):
             lambda s: ((s.structureType == STRUCTURE_TOWER and s.store.getUsedCapacity(RESOURCE_ENERGY) < s.store.getCapacity(RESOURCE_ENERGY) * maxEnergyPercentage)) })
     return tower
 
-def getEnergyStorageStructure(creep, closest = True, controller = False, storage = False):
+def getEnergyStorageStructures(creep, closest = True, controller = False, storage = False):
     """
     Gets an energy storage structure in the same room as a creep
     :param creep: The creep to run
@@ -358,4 +351,33 @@ def getEnergyStorageStructure(creep, closest = True, controller = False, storage
                 lambda s: (((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION) 
                         and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) })
         return target
+
+def getEnergyStorageStructure(creep, storage = False):
+    """
+    Gets an energy storage structure in the same room as a creep
+    :param creep: The creep to run
+    :param closest: Whether to find the closest energy storage structure
+    :param controller: Whether to include the room controller in the available energy storage structures
+    :param storage: Whether to include the room's storage structure in the available energy storage structures, overrides controller
+    """
+    if storage:
+        target = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, {"filter": \
+            lambda s: ((s.structureType == STRUCTURE_STORAGE and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0))})
+        if target:
+            return target
+
+    #go to the closest spawn/extension
+    target = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { "filter": \
+        lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION) 
+                and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) })
+    if not target:
+        target = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": \
+            lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION) 
+                    and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) })
+    if not target:
+        #go to the controller
+        target = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": \
+            lambda s: ((s.structureType == STRUCTURE_CONTROLLER)) })
+    
+    return target
 

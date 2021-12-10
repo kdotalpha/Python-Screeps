@@ -46,7 +46,7 @@ def run_builder(creep):
             print("Selecting targets")
         #if I'm holding exotic materials, go deliver those
         if _.find(creep.store) != undefined and _.find(creep.store) != creep.store.getUsedCapacity(RESOURCE_ENERGY):
-            target = globals.getEnergyStorageStructure(creep, True, False, True)
+            target = globals.getEnergyStorageStructure(creep, True)
             if globals.DEBUG_BUILDERS and target:
                 print(creep.name + " is holding exotic materials, go dump those: " + target.structureType)
 
@@ -86,7 +86,7 @@ def run_builder(creep):
         #If there's truly nothing else to do, fill storage. If storage is full, upgrade controller 
         # Command action is upgradeController or TRANSFER
         if not target:                
-            target = globals.getEnergyStorageStructure(creep, False, True, True)
+            target = globals.getEnergyStorageStructure(creep, True)
             if globals.DEBUG_BUILDERS and target:
                 print(creep.name + " transfering energy: " + target.structureType)
         
