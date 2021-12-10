@@ -65,7 +65,7 @@ def run_builder(creep):
         
         #Then prioritize filling spawns and extensions with energy, command action is TRANSFER
         if not target:
-            target = globals.getEnergyStorageStructure(creep)
+            target = globals.getEnergyStorageStructure(creep, False, False)
             if globals.DEBUG_BUILDERS and target:
                 print(creep.name + " refilling energy: " + target.structureType)
         
@@ -73,23 +73,15 @@ def run_builder(creep):
         if not target:
             target = globals.getTower(creep, 0.9)
             if globals.DEBUG_BUILDERS and target:
-                print(creep.name + " filling tower to min viable: " + target.structureType)         
-
-        """
-        #Then fill all towers to 100%
-        if not target:
-            target = globals.getTower(creep, 1)
-            if globals.DEBUG_BUILDERS and target:
-                print(creep.name + " filling tower to max: " + target.structureType)
-        """
+                print(creep.name + " filling tower to min viable: " + target.structureType) 
 
         #If there's truly nothing else to do, fill storage. If storage is full, upgrade controller 
         # Command action is upgradeController or TRANSFER
         if not target:                
-            target = globals.getEnergyStorageStructure(creep, True)
+            target = globals.getEnergyStorageStructure(creep, True, True)
             if globals.DEBUG_BUILDERS and target:
                 print(creep.name + " transfering energy: " + target.structureType)
-        
+
         if globals.DEBUG_BUILDERS:
             print("Builder target is " + target)
         #set the memory target

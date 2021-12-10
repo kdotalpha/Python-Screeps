@@ -41,8 +41,8 @@ TOWER_WALL_PERCENTAGE = { CONTROLLED_ROOMS[0]: 0.0011 }
 #CREEP CONSTANTS
 MAX_HARVESTERS = { CONTROLLED_ROOMS[0]: 4 }
 MAX_BUILDERS = { CONTROLLED_ROOMS[0]: 1 }
-HARVESTER_BUILDER_MAX_POWER = { CONTROLLED_ROOMS[0]: 1800 }
-MINER_MAX_POWER = { CONTROLLED_ROOMS[0]: 1800 }
+HARVESTER_BUILDER_MAX_POWER = { CONTROLLED_ROOMS[0]: 2100 }
+MINER_MAX_POWER = { CONTROLLED_ROOMS[0]: 2300 }
 CREEP_MIN_POWER = { CONTROLLED_ROOMS[0]: 300 }
 #Controls how many ticks a creep will wait at a used source before searching for a new source
 MAX_CREEP_WAIT = { CONTROLLED_ROOMS[0]: 30 }
@@ -352,7 +352,7 @@ def getEnergyStorageStructures(creep, closest = True, controller = False, storag
                         and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) })
         return target
 
-def getEnergyStorageStructure(creep, storage = False):
+def getEnergyStorageStructure(creep, storage = False, controller = True):
     """
     Gets an energy storage structure in the same room as a creep
     :param creep: The creep to run
@@ -374,7 +374,7 @@ def getEnergyStorageStructure(creep, storage = False):
         target = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": \
             lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION) 
                     and s.store.getFreeCapacity(RESOURCE_ENERGY) > 0) })
-    if not target:
+    if not target and controller:
         #go to the controller
         target = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { "filter": \
             lambda s: ((s.structureType == STRUCTURE_CONTROLLER)) })
