@@ -29,7 +29,8 @@ def run_builder(creep):
     elif not creep.memory.filling and creep.store.getUsedCapacity() == 0:
         if globals.DEBUG_BUILDERS:
             print(creep.name + " is empty and will start filling.")
-        creep.say("🔄 harvest")
+        if globals.CREEP_SPEAK:
+            creep.say("🔄 harvest")
         creep.memory.filling = True
         del creep.memory.target
         del creep.memory.source
@@ -74,11 +75,13 @@ def run_builder(creep):
             if globals.DEBUG_BUILDERS and target:
                 print(creep.name + " filling tower to min viable: " + target.structureType)         
 
+        """
         #Then fill all towers to 100%
         if not target:
             target = globals.getTower(creep, 1)
             if globals.DEBUG_BUILDERS and target:
-                print(creep.name + " filling tower to max: " + target.structureType)  
+                print(creep.name + " filling tower to max: " + target.structureType)
+        """
 
         #If there's truly nothing else to do, fill storage. If storage is full, upgrade controller 
         # Command action is upgradeController or TRANSFER
@@ -93,8 +96,9 @@ def run_builder(creep):
         creep.memory.target = target.id
 
     if creep.memory.filling:
-        #we are building or filling a tower, go get the energy from storage if it exists
-        if creep.room.storage and creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 0 and target and \
+        #we are building or filling a tower, go get the energy from storage if it exists and the spawnLink is empty
+        spawnLink = Game.getObjectById(creep.memory.spawnLink)
+        if creep.room.storage and creep.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > 0 and target and not (spawnLink and spawnLink.store.getUsedCapacity(RESOURCE_ENERGY) > 0) and \
             ((target.progress != undefined and target.structureType != STRUCTURE_CONTROLLER) or (target.structureType == STRUCTURE_TOWER and globals.BUILDER_TOWER_ENERGY[creep.pos.roomName])):
             if globals.DEBUG_BUILDERS:
                 print("Filling from storage")            

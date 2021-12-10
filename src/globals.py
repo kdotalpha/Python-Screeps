@@ -31,25 +31,35 @@ FIX_WALLS = { CONTROLLED_ROOMS[0]: True }
 #do harvesters/builders mine minerals
 MINE_MINERALS = { CONTROLLED_ROOMS[0]: False }
 
-MAX_HARVESTERS = { CONTROLLED_ROOMS[0]: 3 }
-MAX_BUILDERS = { CONTROLLED_ROOMS[0]: 2 }
-
+#What % of energy to reserve in the towers for combat, apart from healing/repairing structures
 TOWER_ENERGY_RESERVE_PERCENTAGE = { CONTROLLED_ROOMS[0]: 0.3 }
+#What % to repair the ramparts to
+TOWER_RAMPART_PERCENTAGE = { CONTROLLED_ROOMS[0]: 0.2 }
+#What % to repair walls to
+TOWER_WALL_PERCENTAGE = { CONTROLLED_ROOMS[0]: 0.0011 }
+
+#CREEP CONSTANTS
+MAX_HARVESTERS = { CONTROLLED_ROOMS[0]: 4 }
+MAX_BUILDERS = { CONTROLLED_ROOMS[0]: 1 }
 HARVESTER_BUILDER_MAX_POWER = { CONTROLLED_ROOMS[0]: 1800 }
 HARVESTER_BUILDER_MIN_POWER = { CONTROLLED_ROOMS[0]: 300 }
-MAX_CREEP_WAIT = { CONTROLLED_ROOMS[0]: 50 }
+#Controls how many ticks a creep will wait at a used source before searching for a new source
+MAX_CREEP_WAIT = { CONTROLLED_ROOMS[0]: 30 }
 
 #debugs
-DEBUG_HARVESTERS = True
+DEBUG_HARVESTERS = False
 DEBUG_CREEP_CREATION = True
 DEBUG_BUILDERS = False
 DEBUG_SOURCE_SELECTION = False
 DEBUG_TOWERS = False
 DEBUG_LINKS = False
-
-
+CREEP_SPEAK = False
 
 def fillCreep(creep, customSource = False):
+    #if this creep is spawning, return nothing
+    if creep.spawning:
+        return None
+
     # If we have a saved source, use it
     if creep.memory.source:
         source = Game.getObjectById(creep.memory.source)
@@ -67,24 +77,30 @@ def fillCreep(creep, customSource = False):
     if creep.pos.isNearTo(source):
         # If we're near the source, harvest it - otherwise, move to it.
         if source.structureType == STRUCTURE_STORAGE or source.structureType == STRUCTURE_LINK:
-            creep.say("🔄 withdraw")
+            if CREEP_SPEAK:
+                creep.say("🔄 withdraw")
             result = creep.withdraw(source, RESOURCE_ENERGY)
         #this is a tombstone
         elif source.deathTime != undefined and _.find(source.store) != undefined:
-            creep.say("🔄 tombstone")
+            if CREEP_SPEAK:
+                creep.say("🔄 tombstone")
             result = creep.withdraw(source, _.findKey(source.store))
-        elif source.structureType == STRUCTURE_EXTRACTOR:
-            creep.say("🔄 minerals")
+        #harvest minerals
+        elif source.mineralType != undefined:
+            if CREEP_SPEAK:
+                creep.say("🔄 minerals")
             result = creep.harvest(source)
         #this is a dropped resource
         elif source.resourceType != undefined:
-            creep.say("🔄 pickup")
+            if CREEP_SPEAK:
+                creep.say("🔄 pickup")
             result = creep.pickup(source)
         else: 
             result = creep.harvest(source)
         if result == ERR_NOT_ENOUGH_RESOURCES:
             #we've mined this out, stop filling and delete this source
-            creep.say("🔄 OOE")
+            if CREEP_SPEAK:
+                creep.say("🔄 OOE")
             del creep.memory.source
             creep.memory.filling = False
         elif result != OK:
@@ -107,7 +123,8 @@ def fillCreep(creep, customSource = False):
             if waiting_creeps.length > 1 or creep.memory.waiting >= MAX_CREEP_WAIT[creep.pos.roomName]:
                 #too many creeps waiting, 50/50 find a new source
                 if _.random(0,1) == 0:
-                    creep.say("🔄 wait")
+                    if CREEP_SPEAK:
+                        creep.say("🔄 wait")
                     del creep.memory.source
                     del creep.memory.waiting
 
@@ -219,12 +236,17 @@ def getExtractableMinerals(room):
 
     mineral = _(room.find(FIND_MINERALS, { "filter": lambda s: ((s.mineralAmount > 0))})).first()
     if DEBUG_SOURCE_SELECTION:
-        print(mineral.pos)
+        print("Minerals found at: " + mineral.pos.x + " " + mineral.pos.y)
     if mineral.pos:
         extractor = _(room.find(FIND_MY_STRUCTURES, {"filter": lambda s: ((s.structureType == STRUCTURE_EXTRACTOR and s.pos.x == mineral.pos.x and s.pos.y == mineral.pos.y))})).first()
-        print(extractor)
+        if DEBUG_SOURCE_SELECTION:
+            print("Extractor found at: " + extractor.pos.x + " " + extractor.pos.y)
     if extractor:
+        if DEBUG_SOURCE_SELECTION:
+            print("Mine-able minerals found")
         return mineral
+    if DEBUG_SOURCE_SELECTION:
+            print("Mine-able minerals not found")
     return None
 
 def getSpawnLink(spawn):

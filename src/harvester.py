@@ -38,7 +38,8 @@ def run_harvester(creep):
                 foundRoad = True
         creep.memory.allRoads = foundRoad
         if foundRoad == False:
-            creep.say("No road")
+            if globals.CREEP_SPEAK:
+                creep.say("No road")
 
     # If we're full, stop filling up and remove the saved source and any saved targets
     if creep.memory.filling and creep.store.getFreeCapacity() == 0:
@@ -52,7 +53,8 @@ def run_harvester(creep):
                     print(creep + " has new sticky source: " + creep.memory.source + " for link " + closeLink[0])
                 creep.memory.stickySource = creep.memory.source
                 creep.memory.closeLink = closeLink[0]
-                creep.say("🔄 sticking")
+                if globals.CREEP_SPEAK:
+                    creep.say("🔄 sticking")
             else:
                 if globals.DEBUG_LINKS:
                     print(creep + " has no link nearby, unsticking")
@@ -65,7 +67,8 @@ def run_harvester(creep):
 
     # If we're empty, start filling again and remove the saved target
     elif not creep.memory.filling and creep.store.getUsedCapacity() == 0:
-        creep.say("🔄 harvest")
+        if globals.CREEP_SPEAK:
+            creep.say("🔄 harvest")
         creep.memory.filling = True
         del creep.memory.target
         if globals.DEBUG_HARVESTERS:
@@ -113,7 +116,8 @@ def run_harvester(creep):
                 target = globals.getEnergyStorageStructure(creep, False, True)
 
             creep.memory.target = target.id
-            creep.say("🚧 " + target.structureType)
+            if globals.CREEP_SPEAK:
+                creep.say("🚧 " + target.structureType)
             if globals.DEBUG_HARVESTERS:
                 print(creep.name + " has a new target: " + target.structureType)
         
