@@ -36,16 +36,17 @@ TOWER_ENERGY_RESERVE_PERCENTAGE = { CONTROLLED_ROOMS[0]: 0.3 }
 #What % to repair the ramparts to
 TOWER_RAMPART_PERCENTAGE = { CONTROLLED_ROOMS[0]: 0.2 }
 #What % to repair walls to
-TOWER_WALL_PERCENTAGE = { CONTROLLED_ROOMS[0]: 0.0011 }
+TOWER_WALL_PERCENTAGE = { CONTROLLED_ROOMS[0]: 0.0012 }
 
 #CREEP CONSTANTS
-MAX_HARVESTERS = { CONTROLLED_ROOMS[0]: 4 }
+MAX_HARVESTERS = { CONTROLLED_ROOMS[0]: 3 }
 MAX_BUILDERS = { CONTROLLED_ROOMS[0]: 1 }
-HARVESTER_BUILDER_MAX_POWER = { CONTROLLED_ROOMS[0]: 2100 }
+HARVESTER_MAX_POWER = { CONTROLLED_ROOMS[0]: 1900 }
+BUILDER_MAX_POWER = { CONTROLLED_ROOMS[0]: 1900 }
 MINER_MAX_POWER = { CONTROLLED_ROOMS[0]: 2300 }
 CREEP_MIN_POWER = { CONTROLLED_ROOMS[0]: 300 }
 #Controls how many ticks a creep will wait at a used source before searching for a new source
-MAX_CREEP_WAIT = { CONTROLLED_ROOMS[0]: 30 }
+MAX_CREEP_WAIT = { CONTROLLED_ROOMS[0]: 20 }
 
 #debugs
 DEBUG_HARVESTERS = False
@@ -184,7 +185,7 @@ def getSource(creep):
             if DEBUG_SOURCE_SELECTION:
                 print("Gathering energy from spawn link")
             return creep.memory.spawnLink
-
+    
     sources = creep.room.find(FIND_SOURCES, {"filter": lambda s: ((s.energy > 0))})
     unusedSources = []
     for source in sources:
@@ -235,7 +236,7 @@ def getExtractableMinerals(room):
     mineral = _(room.find(FIND_MINERALS, { "filter": lambda s: ((s.mineralAmount > 0))})).first()
     if DEBUG_SOURCE_SELECTION:
         print("Minerals found at: " + mineral.pos.x + " " + mineral.pos.y)
-    if mineral.pos:
+    if mineral:
         extractor = _(room.find(FIND_MY_STRUCTURES, {"filter": lambda s: ((s.structureType == STRUCTURE_EXTRACTOR and s.pos.x == mineral.pos.x and s.pos.y == mineral.pos.y))})).first()
         if DEBUG_SOURCE_SELECTION:
             print("Extractor found at: " + extractor.pos.x + " " + extractor.pos.y)

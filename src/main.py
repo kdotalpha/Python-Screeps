@@ -48,24 +48,28 @@ def main():
             allRoadHarvesters = True
             spawnLink = globals.getSpawnLink(spawn)
             makeMiner = globals.getExtractableMinerals(spawn.room)
-            
 
             #If we have less than the total max of harvesters, create a harvester
             if ((creepCount.num_harvesters < globals.MAX_HARVESTERS[spawn.pos.roomName] and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable) or creepCount.num_harvesters == 0) \
                 and spawn.room.energyAvailable >= globals.CREEP_MIN_POWER[spawn.pos.roomName]:
                 createHarvesterBuilder = True
+                is_harvester = True
                 memory = { "memory": { "role": "harvester", "spawnLink": spawnLink } }                
             #otherwise, create a builder
             elif creepCount.num_builders < globals.MAX_BUILDERS[spawn.pos.roomName] and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable and \
                 spawn.room.energyAvailable >= globals.CREEP_MIN_POWER[spawn.pos.roomName]:
                 createHarvesterBuilder = True
+                is_builder = True
                 memory = { "memory": { "role": "builder", "spawnLink": spawnLink } }
             
             if createHarvesterBuilder:
                 if globals.DEBUG_CREEP_CREATION:
                     print("All road harvesters: " + allRoadHarvesters + " Total harvesters: " + creepCount.num_harvesters)    
                 creep_name = Game.time
-                energy = _.min([spawn.room.energyAvailable, globals.HARVESTER_BUILDER_MAX_POWER[spawn.pos.roomName]])
+                if is_harvester:
+                    energy = _.min([spawn.room.energyAvailable, globals.HARVESTER_MAX_POWER[spawn.pos.roomName]])
+                elif is_builder:
+                    energy = _.min([spawn.room.energyAvailable, globals.BUILDER_MAX_POWER[spawn.pos.roomName]])
                 creepParts = []
                 energyUnits = _(energy / globals.CREEP_MIN_POWER[spawn.pos.roomName]).floor()
                 energyRemainder = energy - (energyUnits * globals.CREEP_MIN_POWER[spawn.pos.roomName])
