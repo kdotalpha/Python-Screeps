@@ -61,7 +61,7 @@ COMBAT_CREEP_MIN_POWER = { CONTROLLED_ROOMS[0]: 1800 }
 #this is the minimum number required of this type of combat creep before they go on their sortie into the attack room
 MIN_TANKS = { CONTROLLED_ROOMS[0]: 2 }
 #the max number of this combat creep that can be in the attack room before we stop creating more
-MAX_TANKS = { CONTROLLED_ROOMS[0]: 6 }
+MAX_TANKS = { CONTROLLED_ROOMS[0]: 4 }
 MIN_HEALERS = { CONTROLLED_ROOMS[0]: 2 }
 MIN_RANGED = { CONTROLLED_ROOMS[0]: 2 }
 #TODO: Create defender creeps

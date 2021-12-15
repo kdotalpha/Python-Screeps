@@ -35,6 +35,8 @@ def run_tank(creep):
     if atSpawnRoom and flag:
         #if the answer is yes, don't move to the attack room until there is the minimum number of other creeps of the necessary type
         creepCount = globals.getMyCreepsInRoom(creep.pos.roomName)
+        if globals.DEBUG_TANKS:
+            print(creep + " sees this many tanks in spawn room: " + creepCount.num_tanks)
         if creepCount.num_tanks >= globals.MIN_TANKS[creep.pos.roomName] or creep.memory.doneWaiting:
             if globals.DEBUG_TANKS:
                 print(creep + " enough tanks in spawn room, moving to attack target")
@@ -53,6 +55,7 @@ def run_tank(creep):
             print(creep + " defending spawn room because no flags are defined")
         moveToAttackRoom = False
         moveToSpawnRoom = True
+        del creep.memory.doneWaiting
 
     #we're not at the spawn room and no flag is defined, come home
     elif not atSpawnRoom and not flag:
@@ -60,6 +63,7 @@ def run_tank(creep):
             print(creep + " no flags are defined, returning to spawn room")
         moveToAttackRoom = False        
         moveToSpawnRoom = True
+        del creep.memory.doneWaiting
         #TODO: have them wait at the rendezvous once coming home
 
     #we have a target, but we're not there yet, keep moving
