@@ -13,6 +13,9 @@ __pragma__('noalias', 'update')
 def run_tower(tower):
     #start by destroying hostile creeps
     target = _(tower.room.find(FIND_HOSTILE_CREEPS)).first()
+    #used to turn off the towers from attacking hostile creeps when testing out defense creeps locally
+    if globals.DEBUG_STOP_TOWER_ATTACK:
+        target = None
     if target:
         result = tower.attack(target)
         if result != OK and globals.DEBUG_TOWERS:

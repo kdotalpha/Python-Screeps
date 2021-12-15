@@ -17,114 +17,13 @@ Most players are super easy to beat... Just a matter of paying attention to smal
         "claim": 600
     },
 
-        """        
-        Game.creeps["33493059"].room.getTerrain().get(Game.spawns["Spawn1"].pos.x, Game.spawns["Spawn1"].pos.y)
-        0
-        Game.creeps["33493059"].room.getTerrain().get(Game.spawns["Spawn1"].pos.x, Game.spawns["Spawn1"].pos.y-2)
-        1
+    #    position = __new__(RoomPosition(10, 10, "E26S43"))
+
         """
-
-move move move move work work carry carry 
-
-module.exports.loop = function () {
-
-    for(var name in Game.creeps) {
-        var creep = Game.creeps[name];
-        console.log("Creep Name: ", name, " - Store: ", creep.store.getFreeCapacity())
-    }
-}
-
-Game.creeps["33493059"].room.getTerrain().get(Game.spawns["Spawn1"].pos.x, Game.spawns["Spawn1"].pos.y)
-0
-Game.creeps["33493059"].room.getTerrain().get(Game.spawns["Spawn1"].pos.x, Game.spawns["Spawn1"].pos.y-2)
-1
-
-module.exports.loop = function () {
-
-  for (var creep_name in Game.creeps) 
-  {
-        if (creep_name == "Builder1")
-        { 
-            var creep = Game.creeps[creep_name];
-            console.log(creep_name)
-        }
-  }
-}
-
-
-            var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
-            if (targets.length)
-            {
-                for (var site in targets)
-                {
-                    console.log(site.store);
-                }
-            }
-        }
-  }
-        
-        
-
-def GetCreepByName(name):
-    for creep_name in Object.keys(Game.creeps):
-        if creep_name == name:
-            return Game.creeps[name]
-
-
-var roleBuilder = {
-
-    /** @param {Creep} creep **/
-    run: function(creep) {
-
-	    if(creep.memory.building && creep.store[RESOURCE_ENERGY] == 0) {
-            creep.memory.building = false;
-            creep.say('🔄 harvest');
-	    }
-	    if(!creep.memory.building && creep.store.getFreeCapacity() == 0) {
-	        creep.memory.building = true;
-	        creep.say('🚧 build');
-	    }
-
-	    if(creep.memory.building) {
-	        var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
-            if(targets.length) {
-                if(creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(targets[0], {visualizePathStyle: {stroke: '#ffffff'}});
-                }
-            }
-	    }
-	    else {
-	        var sources = creep.room.find(FIND_SOURCES);
-            if(creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(sources[0], {visualizePathStyle: {stroke: '#ffaa00'}});
-            }
-	    }
-	}
-};
-
-module.exports = roleBuilder;
-
-
-"""     
-    # Run each creep
-    for name in Object.keys(Game.creeps):
-        creep = Game.creeps[name]
-        harvester.run_harvester(creep)
-
-    # Run each spawn
-    for name in Object.keys(Game.spawns):
-        spawn = Game.spawns[name]
-        if not spawn.spawning:
-            # Get the number of our creeps in the room.
-            num_creeps = _.sum(Game.creeps, lambda c: c.pos.roomName == spawn.pos.roomName)
-            # If there are no creeps, spawn a creep once energy is at 250 or more
-            if num_creeps < 0 and spawn.room.energyAvailable >= 250:
-                spawn.createCreep([WORK, CARRY, MOVE, MOVE])
-            # If there are less than 15 creeps but at least one, wait until all spawns and extensions are full before
-            # spawning.
-            elif num_creeps < 15 and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable:
-                # If we have more energy, spawn a bigger creep.
-                if spawn.room.energyCapacityAvailable >= 350:
-                    spawn.createCreep([WORK, CARRY, CARRY, MOVE, MOVE, MOVE])
-                else:
-                    spawn.createCreep([WORK, CARRY, MOVE, MOVE]) """
+        if name == globals.FLAG_MOVE and Game.creeps["scout"]:
+            #it's go time
+            flag = Game.flags[name]
+            Game.creeps["scout"].moveTo(flag)
+            if Game.creeps["scout"].room == flag.room:
+                Game.creeps["scout"].say("It's go time")
+   """ 

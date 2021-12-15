@@ -49,18 +49,36 @@ CREEP_MIN_POWER = { CONTROLLED_ROOMS[0]: 300 }
 MAX_CREEP_WAIT = { CONTROLLED_ROOMS[0]: 20 }
 
 #ROOM ATTACK CONSTANTS
-FLAG_CONQUEST = "CONQUEST"
+#If this flag exists, create combat creeps and move them into this room. Combat Creeps are only created if this flag exists
+FLAG_ATTACK = "attack"
+#Used to move combat creeps. Takes Priority over "attack" flag. Creeps will try to move within 3 of the flag
+FLAG_MOVE = "move"
+#Focus attacks on the position indicated. Ignored for healing. Flag is deleted automatically when the objects on that square are destroyed
+FLAG_FOCUS = "focus"
+#the meeting spot for spawned combat creeps in a room
+FLAG_MEET = "meet"
 COMBAT_CREEP_MIN_POWER = { CONTROLLED_ROOMS[0]: 1800 }
+#this is the minimum number required of this type of combat creep before they go on their sortie into the attack room
+MIN_TANKS = { CONTROLLED_ROOMS[0]: 2 }
+#the max number of this combat creep that can be in the attack room before we stop creating more
+MAX_TANKS = { CONTROLLED_ROOMS[0]: 6 }
+MIN_HEALERS = { CONTROLLED_ROOMS[0]: 2 }
+MIN_RANGED = { CONTROLLED_ROOMS[0]: 2 }
+#TODO: Create defender creeps
 
 #DEBUGS
+DEBUG_TANKS = True
 DEBUG_HARVESTERS = False
 DEBUG_BUILDERS = False
 DEBUG_MINERS = False
 DEBUG_CREEP_CREATION = True
 DEBUG_SOURCE_SELECTION = False
 DEBUG_TOWERS = False
+DEBUG_STOP_TOWER_ATTACK = True
 DEBUG_LINKS = False
+DEBUG_HOSTILE_SEARCH = True
 CREEP_SPEAK = False
+
 
 def fillCreep(creep, customSource = False):
     #if this creep is spawning, return nothing
@@ -143,25 +161,46 @@ def fillCreep(creep, customSource = False):
             del creep.memory.waiting
 
 def getMyCreepsInRoom(roomName):
+    """
+    Counts the number of creeps in the current room and returns them as a struct
+    :param roomName: The room to count creeps in
+    """
     num_creeps = 0
     num_harvesters = 0
     num_builders = 0
     num_miners = 0
+    num_tanks = 0
+    num_ranged = 0
+    num_healers = 0
+    num_claimers = 0
     for name in Object.keys(Game.creeps):
         countCreep = Game.creeps[name]
-        if countCreep.pos.roomName == roomName:
+        if countCreep.pos.roomName == roomName and countCreep.spawning == False:
             if countCreep.memory.role == "harvester":
                 num_harvesters += 1
             elif countCreep.memory.role == "builder":
                 num_builders += 1
             elif countCreep.memory.role == "miner":
                 num_miners += 1
-    num_creeps = num_harvesters + num_builders + num_miners
+            elif countCreep.memory.role == "tank":
+                num_tanks += 1
+            elif countCreep.memory.role == "ranged":
+                num_ranged += 1
+            elif countCreep.memory.role == "healer":
+                num_healers += 1
+            elif countCreep.memory.role == "claimer":
+                num_claimers += 1
+
+    num_creeps = num_harvesters + num_builders + num_miners + num_tanks + num_ranged + num_healers + num_claimers
 
     return {"num_creeps": num_creeps, 
             "num_harvesters": num_harvesters, 
             "num_builders": num_builders,
-            "num_miners": num_miners }
+            "num_miners": num_miners,
+            "num_tanks": num_tanks,
+            "num_ranged": num_ranged,
+            "num_healers": num_healers,
+            "num_claimers": num_claimers }
 
 def getSource(creep):
     #If there is a dropped source, just go there
@@ -198,16 +237,16 @@ def getSource(creep):
             if DEBUG_SOURCE_SELECTION:
                 print("Unused sources: " + unusedSources + " with count " + unusedSources.length)
     
-    range = 99999999
+    sourceRange = 9999
     if unusedSources.length > 0:
         #If there are sources with no one around, go to those
         for s in unusedSources:
             source_range = creep.pos.getRangeTo(s)
             if DEBUG_SOURCE_SELECTION:
                 print("Range to " + s + " is " + source_range)
-            if source_range < range:
+            if source_range < sourceRange:
                 target = s
-                range = source_range
+                sourceRange = source_range
         if DEBUG_SOURCE_SELECTION:
             print("Selected closest target is " + target)
         return target
@@ -386,3 +425,80 @@ def getEnergyStorageStructure(creep, storage = False, controller = True):
     
     return target
 
+def checkForPartInCreep(creep, bodyPart):
+    """
+    Returns true of the bodyPart is contained in the Creep's body
+    :param creep: The creep to check
+    :param bodyPart: The part to check for (e.g. RANGED_ATTACK)
+    """
+    if not creep or not creep.body:
+        return False
+    for i in range(0, creep.body.length):
+        if creep.body[i].type == bodyPart:
+            return True
+    return False
+
+def getHostiles(creep, attackCreeps = True, towers = True, creeps = True, structures = True, constructionSites = True, spawns = True, powerCreeps = True):
+    #returns the closest hostile of each type indicated
+    if not creep:
+        return
+    position = creep.pos
+    room = creep.room
+    hostiles = []
+    if attackCreeps:
+        creeps = room.find(FIND_HOSTILE_CREEPS)
+        if DEBUG_HOSTILE_SEARCH:
+            print("hostile attack creeps found: " + creeps)
+        closestAttackCreep = None
+        creepRange = 9999
+        for i in range(0, creeps.length):
+            if checkForPartInCreep(creeps[i], ATTACK) or checkForPartInCreep(creeps[i], RANGED_ATTACK) or checkForPartInCreep(creeps[i], HEAL):
+                iRange = position.getRangeTo(creeps[i])
+                if iRange < creepRange:
+                    creepRange = iRange
+                    closestAttackCreep = creeps[i]        
+        if closestAttackCreep != None:
+            if DEBUG_HOSTILE_SEARCH:
+                print("Closest attack creep: " + closestAttackCreep)
+            hostiles.append(closestAttackCreep)
+    if towers:
+        temp = position.findClosestByRange(FIND_HOSTILE_STRUCTURES, { "filter": lambda s: (s.structureType == STRUCTURE_TOWER)})
+        if temp:
+            hostiles.append(temp)
+    if creeps:
+        temp = position.findClosestByRange(FIND_HOSTILE_CREEPS)
+        if temp:
+            hostiles.append(temp)
+    if structures:
+        temp = position.findClosestByRange(FIND_HOSTILE_STRUCTURES)
+        if temp:
+            hostiles.append(temp)
+    if constructionSites:
+        temp = position.findClosestByRange(FIND_MY_CONSTRUCTION_SITES)
+        if temp:
+            hostiles.append(temp)
+    if spawns:
+        temp = position.findClosestByRange(FIND_HOSTILE_SPAWNS)
+        if temp:
+            hostiles.append(temp)
+    if powerCreeps:
+        temp = position.findClosestByRange(FIND_HOSTILE_POWER_CREEPS)
+        if temp:
+            hostiles.append(temp)
+
+    if DEBUG_HOSTILE_SEARCH:
+        print("All hostiles: " + hostiles)
+    return hostiles
+
+def getFlags(flagConstant):
+    #returns all flags that equal the flag constant passed in
+    flags = []
+    for name in Object.keys(Game.flags):
+        if name == flagConstant:
+            flags.append(Game.flags[name])
+    if flags.length == 0:
+        return None
+    return flags
+            
+            
+    

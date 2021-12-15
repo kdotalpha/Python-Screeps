@@ -9,6 +9,7 @@ import builder
 import tower
 import links
 import miner
+import tank
 
 # These are currently required for Transcrypt in order to use the following names in JavaScript.
 # Without the 'noalias' pragma, each of the following would be translated into something like 'py_Infinity' or
@@ -27,20 +28,17 @@ def main():
     """
     Main game logic loop.
     """
-#    position = __new__(RoomPosition(10, 10, "E26S43"))
-    
-    for name in Object.keys(Game.flags):
-        if name == globals.FLAG_CONQUEST and Game.creeps["scout"]:
-            #it's go time
-            flag = Game.flags[name]
-            Game.creeps["scout"].moveTo(flag)
-            if Game.creeps["scout"].room == flag.room:
-                Game.creeps["scout"].say("It's go time")
-    
+
    #Clean the memory of dead creeps
     for mem_name in Object.keys(Memory.creeps):
        if not Game.creeps[mem_name]:
            del Memory.creeps[mem_name]
+
+    # Run Towers in all rooms
+    for struct in Object.keys(Game.structures):
+        s = Game.structures[struct]
+        if s.structureType == STRUCTURE_TOWER:
+            tower.run_tower(s)
 
     # Run each spawn
     for name in Object.keys(Game.spawns):
@@ -52,14 +50,26 @@ def main():
         creepCount = globals.getMyCreepsInRoom(spawn.pos.roomName)
     
         if not spawn.spawning:
-
+            #We set this to true if we are actually going to spawn a creep
+            createSpawn = False
             allRoadHarvesters = spawn.room.find(FIND_MY_CREEPS, {"filter": lambda s: ((s.memory.role == "harvester" and s.memory.allRoads == True))}).length == creepCount.num_harvesters and creepCount.num_harvesters != 0
             spawnLink = globals.getSpawnLink(spawn)
             makeMiner = globals.getExtractableMinerals(spawn.room)
+            
+            #determine if I need to spawn combat creeps. every single spawn will try and create combat creeps during an attack (for now)
+            #TODO - also spawn combat creeps if there are hostiles in the current room
+            createCombatCreeps = False
+            flags = globals.getFlags(globals.FLAG_ATTACK)
+            attackFlag = None
+            attackRoomName = None
+            if flags:
+                createCombatCreeps = True
+                attackFlag = flags[0]
+                attackRoomName = attackFlag.pos.roomName
 
             #If we have less than the total max of harvesters, create a harvester
-            if ((creepCount.num_harvesters < globals.MAX_HARVESTERS[spawn.pos.roomName] and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable) or creepCount.num_harvesters == 0) \
-                and spawn.room.energyAvailable >= globals.CREEP_MIN_POWER[spawn.pos.roomName]:
+            if ((creepCount.num_harvesters < globals.MAX_HARVESTERS[spawn.pos.roomName] and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable) \
+                or creepCount.num_harvesters == 0) and spawn.room.energyAvailable >= globals.CREEP_MIN_POWER[spawn.pos.roomName]:
                 createHarvesterBuilder = True
                 is_harvester = True
                 memory = { "memory": { "role": "harvester", "spawnLink": spawnLink } }                
@@ -137,12 +147,7 @@ def main():
                         creepParts.append(CARRY)
                     else:
                         creepParts.append(MOVE)
-                        
-                result = spawn.spawnCreep(creepParts, creep_name, memory)
-                if result != OK:
-                    print("Ran into error creating creep: " + result + " with energy " + energy + " with role: " + memory.memory.role + " with parts: " + creepParts)
-                elif globals.DEBUG_CREEP_CREATION:
-                    print("Creating a new creep named " + creep_name + " with energy " + energy + " with role: " + memory.memory.role + " with parts: " + creepParts)
+                createSpawn = True
 
             elif makeMiner and creepCount.num_miners < 1 and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable and \
                 spawn.room.energyAvailable >= globals.CREEP_MIN_POWER[spawn.pos.roomName] and globals.MINE_MINERALS[spawn.pos.roomName]:
@@ -176,13 +181,32 @@ def main():
                     creepParts.append(WORK)
                 elif energyRemainder == 50:
                     creepParts.append(CARRY)
-                
+                createSpawn = True
+
+            elif createCombatCreeps and spawn.room.energyAvailable >= globals.COMBAT_CREEP_MIN_POWER[spawn.pos.roomName] \
+                and globals.getMyCreepsInRoom(attackRoomName).num_tanks < globals.MAX_TANKS[spawn.pos.roomName]:
+                #TODO: Logic to determine what type of combat creep to create, for now just create a tank
+                memory = { "memory": { "role": "tank", "spawnId": spawn.id } }
+                if globals.DEBUG_CREEP_CREATION:
+                    print("Creating tank")
+                creep_name = Game.time
+                #combat creeps have an exact creation, instead of being scalable (at least for now)
+                creepParts = []
+                for i in range(0, 10):
+                    creepParts.append(TOUGH)
+                for i in range(0, 19):
+                    creepParts.append(MOVE)
+                for i in range(0, 9):
+                    creepParts.append(ATTACK)
+                createSpawn = True
+
+            if createSpawn:
                 result = spawn.spawnCreep(creepParts, creep_name, memory)
                 if result != OK:
                     print("Ran into error creating creep: " + result + " with energy " + energy + " with role: " + memory.memory.role + " with parts: " + creepParts)
                 elif globals.DEBUG_CREEP_CREATION:
-                    print("Creating a new creep named " + creep_name + " with energy " + energy + " with role: " + memory.memory.role + " with parts: " + creepParts)    
-
+                    print("Creating a new creep named " + creep_name + " with energy " + energy + " with role: " + memory.memory.role + " with parts: " + creepParts)
+    
     # Run creeps in all rooms
     for name in Object.keys(Game.creeps):
         creep = Game.creeps[name]
@@ -192,11 +216,9 @@ def main():
             builder.run_builder(creep)
         elif creep.memory.role == "miner":
             miner.run_miner(creep)
+        elif creep.memory.role == "tank":
+            tank.run_tank(creep)
 
-    # Run Towers in all rooms
-    for struct in Object.keys(Game.structures):
-        s = Game.structures[struct]
-        if s.structureType == STRUCTURE_TOWER:
-            tower.run_tower(s)
+
 
 module.exports.loop = main
