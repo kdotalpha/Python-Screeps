@@ -1,3 +1,11 @@
+Yeah, attacking the economy is definitely a very valid strategy. Just understand though that if he has credits, other rooms, friends or worse yet an alliance and of course a terminal in that room, if his code is good he could entertain you for days, if not weeks.
+The average player doesn't have a big buffer... and towers are really a huge drain on economy if you keep them shooting constantly. Speaking of which I forgot to mention, draining towers is best done from the furthest distance possible from the tower(s). You'll get less damage that way.
+Also very important, keep an eye out on his AI's behavior. What does his towers shoot at? Closest? Healer? Lowest health? Most players just shoot the closest... Means that you can have a pair of healers healing each other crawl up near the towers and have other cheaper creeps just sneak by and do mayhem.
+Does he fill towers before filling spawns/extensions? If so, you might not even need to drain him fully... Just keep him busy filling towers and watch all his creeps die because none are filling spawns/extensions....
+Does he go for energy drops? Try dismantling a wall, or having a hauler drop a load of energy outside the walls... Does he send creeps to pick it up, totally ignoring your creeps in the room? If so, lure them out, pick them off, drain his economy and keep his spawns busy.
+
+Most players are super easy to beat... Just a matter of paying attention to small details.
+    
     BODYPART_COST: {
         "move": 50,
         "work": 100,

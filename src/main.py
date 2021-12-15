@@ -27,7 +27,16 @@ def main():
     """
     Main game logic loop.
     """
-   
+#    position = __new__(RoomPosition(10, 10, "E26S43"))
+    
+    for name in Object.keys(Game.flags):
+        if name == globals.FLAG_CONQUEST and Game.creeps["scout"]:
+            #it's go time
+            flag = Game.flags[name]
+            Game.creeps["scout"].moveTo(flag)
+            if Game.creeps["scout"].room == flag.room:
+                Game.creeps["scout"].say("It's go time")
+    
    #Clean the memory of dead creeps
     for mem_name in Object.keys(Memory.creeps):
        if not Game.creeps[mem_name]:
@@ -44,8 +53,7 @@ def main():
     
         if not spawn.spawning:
 
-            #allRoadHarvesters = spawn.room.find(FIND_MY_CREEPS, {"filter": lambda s: ((s.memory.role == "harvester" and s.allRoads == True))}).length == num_harvesters and num_harvesters != 0
-            allRoadHarvesters = True
+            allRoadHarvesters = spawn.room.find(FIND_MY_CREEPS, {"filter": lambda s: ((s.memory.role == "harvester" and s.memory.allRoads == True))}).length == creepCount.num_harvesters and creepCount.num_harvesters != 0
             spawnLink = globals.getSpawnLink(spawn)
             makeMiner = globals.getExtractableMinerals(spawn.room)
 
