@@ -38,6 +38,7 @@ def run_tank(creep):
         if globals.DEBUG_TANKS:
             print(creep + " sees this many tanks in spawn room: " + creepCount.num_tanks)
         if creepCount.num_tanks >= globals.MIN_TANKS[creep.pos.roomName] or creep.memory.doneWaiting:
+            #TODO: Get them to move together
             if globals.DEBUG_TANKS:
                 print(creep + " enough tanks in spawn room, moving to attack target")
             moveToAttackRoom = True
