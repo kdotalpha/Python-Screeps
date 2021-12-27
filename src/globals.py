@@ -301,8 +301,8 @@ def getBrokenStructure(creep, closest=True, hitsMinPercentage=1, myStructures = 
     """
     Gets a structure in the same room as a creep with hits less than hitsMinPercentage of max hits
     :param creep: The creep to run
-    :param closest: Whether to find the closest road
-    :param hitsMinPercentage: The percentage to repair the road up to, between 0 and 1
+    :param closest: Whether to find the closest structure
+    :param hitsMinPercentage: The percentage to repair the structure up to, between 0 and 1
     :param structureType: The the specific structureType to look for. If None, look for anything
     :param avoidStructureType: Look for any structures besides the one specified. If provided, ignores structureType
     """
@@ -325,7 +325,7 @@ def getBrokenStructure(creep, closest=True, hitsMinPercentage=1, myStructures = 
             print("Avoiding structure type: " + avoidStructureType)
         if not closest:
             return _(creep.room.find(FIND_CONSTANT)) \
-                        .filter(lambda s: ((s.hits < (s.hitsMax * hitsMinPercentage) and s.structureType != avoidStructureType))) \
+                        .filter(lambda s: ((s.hits < (s.hitsMax * hitsMinPercentage) and not avoidStructureType.includes(s.structureType)))) \
                         .first()
         else:
             return creep.pos.findClosestByRange(FIND_CONSTANT, { "filter": lambda s: ((s.hits < (s.hitsMax * hitsMinPercentage) and s.structureType != avoidStructureType)) })

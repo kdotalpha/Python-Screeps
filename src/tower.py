@@ -41,14 +41,21 @@ def run_tower(tower):
         if globals.FIX_ROADS[tower.pos.roomName]:
             target = globals.getBrokenStructure(tower, True, 1, False, None, STRUCTURE_ROAD)
         if not target:
-            #heal ramparts
+            #heal ramparts to bare minimum
+            target = globals.getBrokenStructure(tower, True, 0.01, True, None, STRUCTURE_RAMPART)
+        if not target:
+            #heal walls to bare minimum
+            target = globals.getBrokenStructure(tower, True, 0.01, True, None, STRUCTURE_WALL)
+        if not target:
+            #heal everything else to full
+            target = globals.getBrokenStructure(tower, True, 1, True, [STRUCTURE_RAMPART, STRUCTURE_WALL])
+        if not target:
+            #heal ramparts to full
             target = globals.getBrokenStructure(tower, True, globals.TOWER_RAMPART_PERCENTAGE[tower.pos.roomName], True, None, STRUCTURE_RAMPART)
         if not target and globals.FIX_WALLS[tower.pos.roomName]:
-            #heal walls
+            #heal walls to full
             target = globals.getBrokenStructure(tower, True, globals.TOWER_WALL_PERCENTAGE[tower.pos.roomName], False, None, STRUCTURE_WALL)
-        if not target:
-            #heal everything else
-            target = globals.getBrokenStructure(tower, True, 1, True, STRUCTURE_RAMPART)
+
         if target:
             if globals.DEBUG_TOWERS:
                 print("Tower repair target is " + target.structureType)
