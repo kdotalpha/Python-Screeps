@@ -93,11 +93,14 @@ def fillCreep(creep, customSource = False):
             return
     else:
         # Get a random new source and save it
-        if customSource:
+        if customSource and customSource != undefined:
             source = customSource
         else:
             source = getSource(creep)
-        creep.memory.source = source.id
+        if source:
+            creep.memory.source = source.id
+        else:
+            return
 
     if creep.pos.isNearTo(source):
         # If we're near the source, harvest it - otherwise, move to it.
