@@ -52,7 +52,7 @@ def main():
         if not spawn.spawning:
             #We set this to true if we are actually going to spawn a creep
             createSpawn = False
-            allRoadHarvesters = spawn.room.find(FIND_MY_CREEPS, {"filter": lambda s: ((s.memory.role == "harvester" and s.memory.allRoads == True))}).length == creepCount.num_harvesters and creepCount.num_harvesters != 0
+            allRoadHarvesters = True #spawn.room.find(FIND_MY_CREEPS, {"filter": lambda s: ((s.memory.role == "harvester" and s.memory.allRoads == True))}).length == creepCount.num_harvesters and creepCount.num_harvesters != 0
             spawnLink = globals.getSpawnLink(spawn)
             makeMiner = globals.getExtractableMinerals(spawn.room)
             
